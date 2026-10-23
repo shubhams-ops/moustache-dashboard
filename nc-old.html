@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discount &amp; NC Summary · Moustache PMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F4FB; --card:#FFFFFF; --ink:#25243A; --ink2:#4A4866; --muted:#8B89A6;
+    --line:#ECEBF4; --line2:#F4F3FA;
+    --indigo:#5B54E4; --indigo2:#6E67F0; --indigo-bg:#EDECFC;
+    --green:#217A57; --green-bg:#E3F2EA;
+    --red:#E14B4B; --red-bg:#FCECEC;
+    --amber:#CC8A22; --amber-bg:#FBF1DC;
+    --lav:#EDECFB; --peach:#FBEEDD; --mint:#E4F3EC; --sky:#E6EFFB;
+    --sh:0 1px 2px rgba(37,36,58,.04),0 8px 24px rgba(37,36,58,.05);
+    --sh2:0 10px 40px rgba(37,36,58,.14);
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer;border:0;background:none}
+  input,select,textarea{font-family:inherit;font-size:14.5px;color:inherit}
+  .tnum{font-variant-numeric:tabular-nums}
+  ::selection{background:var(--indigo-bg)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 20px 60px}
+
+  /* ---------- header ---------- */
+  .greet .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--indigo);font-weight:800}
+  .greet h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:7px 0 4px}
+  .greet p{margin:0;color:var(--muted);font-size:15px}
+  .topbar{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .topbar .spacer{flex:1}
+  .selbox{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:var(--sh)}
+  .selbox label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .selbox select{border:0;background:none;font-weight:700;font-size:13.5px;color:var(--indigo);padding:2px 22px 2px 2px;cursor:pointer;
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235B54E4' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 2px center}
+  .selbox select:focus{outline:none}
+  .period{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:var(--sh)}
+  .period label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .period input{border:0;background:none;font-weight:700;font-size:13.5px;width:120px;padding:2px 0;color:var(--ink)}
+  .period input:focus{outline:none;color:var(--indigo)}
+  .period input:disabled{opacity:.55;cursor:not-allowed}
+  .period .dash{color:var(--line);font-weight:800}
+
+  /* auth chip */
+  .authbox{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:7px 10px 7px 12px;box-shadow:var(--sh)}
+  .authbox .who{display:flex;flex-direction:column;line-height:1.15}
+  .authbox .who .nm{font-weight:800;font-size:13px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .authbox .who .rl{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .authbox .who .rl.editor{color:var(--green)}
+  .authbox .who .rl.viewer{color:var(--muted)}
+  .authbox .gbtn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card);color:var(--ink)}
+  .authbox .gbtn:hover{background:var(--line2)}
+  .authbox .gbtn svg{width:16px;height:16px}
+  .authbox .lnk{font-size:12px;font-weight:700;color:var(--muted)}
+  .authbox .lnk:hover{color:var(--red)}
+
+  /* connection banner */
+  .banner{border-radius:14px;padding:12px 16px;margin:0 0 18px;font-size:13px;font-weight:600;display:none;align-items:center;gap:10px}
+  .banner.show{display:flex}
+  .banner.info{background:var(--indigo-bg);color:var(--ink2)}
+  .banner.warn{background:var(--amber-bg);color:#8a5d12}
+  .banner.err{background:var(--red-bg);color:#a13030}
+  .banner svg{width:18px;height:18px;flex:none}
+  .banner b{font-weight:800}
+
+  .actions{display:flex;gap:9px}
+  .btn{border-radius:12px;padding:10px 16px;font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;gap:8px;transition:filter .12s,background .12s}
+  .btn svg{width:16px;height:16px}
+  .btn.primary{background:var(--indigo);color:#fff}
+  .btn.primary:hover{background:var(--indigo2)}
+  .btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink2);box-shadow:var(--sh)}
+  .btn.ghost:hover{background:var(--line2)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ---------- stat cards ---------- */
+  .stats{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:17px 18px;box-shadow:var(--sh);position:relative;overflow:hidden}
+  .stat .sq{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin-bottom:13px}
+  .stat .sq svg{width:20px;height:20px}
+  .stat .lbl{font-size:12px;color:var(--muted);font-weight:700}
+  .stat .num{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.12;margin-top:3px}
+  .stat.big .num{font-size:30px}
+  .stat .sub{font-size:12.5px;font-weight:700;margin-top:4px;color:var(--muted)}
+  .stat .sub b{color:var(--indigo)}
+  .stat.warn .sub b{color:var(--amber)}
+  .stat.flag .sub b{color:var(--red)}
+  .minirow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+  .mini{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;display:flex;align-items:center;gap:12px}
+  .mini .k{font-size:12px;color:var(--muted);font-weight:700}
+  .mini .v{font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .mini .spacer{flex:1}
+  .mini .note{font-size:12px;color:var(--muted);font-weight:600;text-align:right;max-width:190px}
+
+  /* ---------- section head + panels ---------- */
+  .sec-head{display:flex;align-items:center;gap:10px;margin:0 0 13px}
+  .sec-head h2{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:0}
+  .sec-head .pill{font-size:11.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:20px;padding:3px 10px}
+  .sec-head .pill.amber{background:var(--amber)}
+  .sec-head .spacer{flex:1}
+  .sec-head .hint{font-size:12px;color:var(--muted);font-weight:600}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:28px}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800;text-align:right;padding:14px 16px 11px;border-bottom:1px solid var(--line)}
+  thead th.l{text-align:left}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line2);text-align:right;font-weight:600}
+  tbody td.l{text-align:left}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--line2)}
+  .cat{display:flex;align-items:center;gap:11px}
+  .cat .n{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--lav);color:var(--indigo);flex:none}
+  .cat .nm{font-weight:700}
+  /* editable money inputs */
+  .cell-in{width:88px;text-align:right;border:1px solid transparent;border-radius:8px;padding:5px 7px;font-weight:700;font-variant-numeric:tabular-nums;background:transparent;transition:border-color .12s,background .12s}
+  .cell-in:hover:not(:disabled){border-color:var(--line)}
+  .cell-in:focus{outline:none;border-color:var(--indigo);background:#fff;box-shadow:0 0 0 3px var(--indigo-bg)}
+  .cell-in.empty{color:var(--muted)}
+  .cell-in:disabled{cursor:not-allowed;opacity:1}
+  .rup{color:var(--muted);font-weight:700;margin-right:1px}
+  .share{display:flex;align-items:center;gap:9px;justify-content:flex-end;min-width:150px}
+  .share .track{width:78px;height:7px;border-radius:6px;background:var(--line);overflow:hidden;flex:none}
+  .share .track i{display:block;height:100%;border-radius:6px;background:var(--indigo2)}
+  .share .pc{font-weight:800;font-variant-numeric:tabular-nums;min-width:42px;text-align:right}
+  tr.hot td{background:#fff}
+  tr.hot .cat .n{background:var(--amber-bg);color:var(--amber)}
+  tr.hot .share .track i{background:var(--amber)}
+  .trow td{background:var(--indigo);border:0}
+  .trow td,.trow td *{color:#fff}
+  .trow .cat .n{background:rgba(255,255,255,.16);color:#fff}
+  .trow .cell-in{color:#fff}
+  .trow .share .track{background:rgba(255,255,255,.25)}
+  .trow .share .track i{background:#fff}
+
+  /* NC pills */
+  .pill2{font-size:11px;font-weight:800;padding:4px 10px;border-radius:16px;display:inline-block;white-space:nowrap}
+  .pill2.ok{background:var(--green-bg);color:var(--green)}
+  .pill2.no{background:var(--red-bg);color:var(--red)}
+  .pill2.na{background:var(--line);color:var(--muted)}
+  .flagtag{font-size:11px;font-weight:800;padding:4px 10px;border-radius:16px;background:var(--amber-bg);color:var(--amber);white-space:nowrap}
+  .capbar{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+  .capbar .track{width:70px;height:7px;border-radius:6px;background:var(--line);overflow:hidden;flex:none}
+  .capbar .track i{display:block;height:100%;border-radius:6px;background:var(--green)}
+  .capbar.over .track i{background:var(--red)}
+  .det{font-size:12px;color:var(--muted);font-weight:600;max-width:220px;text-align:left;line-height:1.35}
+
+  /* ---------- modal ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(37,36,58,.42);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .scrim.on{display:flex}
+  .modal{background:var(--card);border-radius:22px;box-shadow:var(--sh2);width:100%;max-width:620px;padding:24px;max-height:90vh;overflow:auto}
+  .modal h3{margin:0 0 5px;font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .modal p.lead{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+  .modal textarea{width:100%;min-height:170px;border:1px solid var(--line);border-radius:14px;padding:13px;font-size:13px;line-height:1.5;resize:vertical;font-variant-numeric:tabular-nums;background:var(--line2)}
+  .modal textarea:focus{outline:none;border-color:var(--indigo);background:#fff;box-shadow:0 0 0 3px var(--indigo-bg)}
+  .steps{background:var(--indigo-bg);border-radius:14px;padding:13px 15px;margin:0 0 16px;font-size:12.5px;color:var(--ink2);font-weight:600}
+  .steps b{color:var(--indigo)}
+  .modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+  .close{position:absolute;top:18px;right:20px;font-size:24px;color:var(--muted);line-height:1;background:none}
+  .modal-wrap{position:relative}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-weight:700;font-size:13.5px;box-shadow:var(--sh2);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;display:flex;align-items:center;gap:9px}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--red)}
+  .toast svg{width:16px;height:16px}
+
+  .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+  .foot b{color:var(--ink2)}
+
+  @media (max-width:860px){
+    .stats{grid-template-columns:1fr 1fr}
+    .minirow{grid-template-columns:1fr}
+    .det,.share .pc{display:none}
+    thead th.opt,tbody td.opt{display:none}
+  }
+  @media print{
+    body{background:#fff}
+    .actions,.period,.selbox,.authbox,.banner,.close,.foot,.sec-head .hint{display:none}
+    .panel,.stat,.mini{box-shadow:none}
+    .btn{display:none}
+  }
+
+  /* ---------- app shell with sidebar ---------- */
+  .shell{display:flex;min-height:100vh}
+  .side{width:230px;flex:none;background:#211F38;color:#CFCDE6;padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+  .side .brand{display:flex;align-items:center;gap:10px;padding:4px 10px 18px}
+  .side .brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--indigo2),#8b84ff);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex:none}
+  .side .brand .bt{font-weight:800;font-size:14.5px;color:#fff;line-height:1.15}
+  .side .brand .bs{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8583A8;font-weight:700}
+  .side .navlabel{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6F6D93;font-weight:800;padding:14px 12px 6px}
+  .navbtn{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:11px 12px;border-radius:11px;color:#CFCDE6;font-weight:700;font-size:14px;transition:background .12s,color .12s}
+  .navbtn svg{width:18px;height:18px;flex:none;opacity:.85}
+  .navbtn:hover{background:rgba(255,255,255,.06);color:#fff}
+  .navbtn.on{background:var(--indigo);color:#fff}
+  .navbtn.on svg{opacity:1}
+  .side .sfoot{margin-top:auto;font-size:11px;color:#6F6D93;font-weight:600;padding:12px 12px 0;line-height:1.5}
+  .main{flex:1;min-width:0}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* ---------- bar deals ---------- */
+  .bd-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .bd-filter{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:var(--sh)}
+  .bd-filter label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .bd-filter select{border:0;background:none;font-weight:700;font-size:13.5px;color:var(--indigo);padding:2px 22px 2px 2px;cursor:pointer;appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235B54E4' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 2px center}
+  .bd-filter select:focus{outline:none}
+  .bd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .status-pill{font-size:11px;font-weight:800;padding:4px 10px;border-radius:16px;display:inline-block;white-space:nowrap}
+  .status-pill.sent{background:var(--amber-bg);color:var(--amber)}
+  .status-pill.recv{background:var(--green-bg);color:var(--green)}
+  .status-pill.none{background:var(--line);color:var(--muted)}
+  .status-pill.period{background:var(--indigo-bg);color:var(--indigo)}
+  .brandcell{font-size:12.5px;color:var(--ink2);max-width:280px;line-height:1.4}
+  .prog{display:flex;align-items:center;gap:9px;justify-content:flex-end;min-width:130px}
+  .prog .track{width:70px;height:7px;border-radius:6px;background:var(--line);overflow:hidden;flex:none}
+  .prog .track i{display:block;height:100%;border-radius:6px;background:var(--indigo2)}
+  .prog .track i.full{background:var(--green)}
+  .prog .pc{font-weight:800;font-variant-numeric:tabular-nums;min-width:64px;text-align:right;font-size:12.5px}
+  .subrow td{background:var(--line2);padding:0}
+  .subwrap{padding:6px 16px 14px 49px}
+  .subwrap .st{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin:8px 0 6px}
+  .items{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:9px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .chip b{color:var(--ink);margin-left:5px}
+  .claimline{font-size:12.5px;color:var(--ink2);font-weight:600;margin-top:4px}
+  .expander{cursor:pointer;user-select:none}
+  .expander .caret{display:inline-block;transition:transform .15s;color:var(--muted);margin-right:6px}
+  tr.open .expander .caret{transform:rotate(90deg)}
+
+  @media (max-width:860px){
+    .shell{flex-direction:column}
+    .side{width:auto;height:auto;position:static;flex-direction:row;flex-wrap:wrap;gap:6px;padding:12px}
+    .side .brand,.side .navlabel,.side .sfoot{display:none}
+    .navbtn{width:auto}
+    .bd-stats{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand">
+    <div class="logo">M</div>
+    <div><div class="bt">Moustache F&amp;B</div><div class="bs">PMS</div></div>
+  </div>
+  <div class="navlabel">Dashboards</div>
+  <button class="navbtn on" id="nav-ncd" data-view="ncd">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/></svg>
+    NC &amp; Discount
+  </button>
+  <a class="navbtn" id="nav-bar" href="deals.html" style="text-decoration:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18l-7 8v6l-4 2v-8z"/></svg>
+    Bar Deals
+  </a>
+  <div class="sfoot">Live shared data · anyone can view · company accounts can edit.</div>
+</aside>
+<div class="main">
+
+<div class="view on" id="view-ncd">
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="greet">
+      <div class="eyebrow">Moustache F&amp;B</div>
+      <h1>Discount &amp; NC Monthly Summary</h1>
+      <p id="subline">Reporting period —</p>
+    </div>
+    <div class="spacer"></div>
+    <div class="authbox" id="authbox">
+      <!-- filled by JS: either a Sign-in button, or the user chip -->
+    </div>
+    <div class="selbox">
+      <label>Property</label>
+      <select id="propSel"></select>
+    </div>
+    <div class="period">
+      <label>From</label>
+      <input type="date" id="from">
+      <span class="dash">–</span>
+      <label>To</label>
+      <input type="date" id="to">
+    </div>
+  </div>
+
+  <!-- connection / permission banner -->
+  <div class="banner" id="banner"></div>
+
+  <div class="actions" style="margin:-4px 0 22px">
+    <button class="btn primary" id="pasteBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-3"/></svg>
+      Paste data from sheet
+    </button>
+    <button class="btn ghost" id="printBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+      Print / PDF
+    </button>
+    <button class="btn ghost" id="resetBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+      Reset this property
+    </button>
+  </div>
+
+  <!-- KEY NUMBERS -->
+  <div class="stats">
+    <div class="stat big">
+      <div class="sq" style="background:var(--lav);color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></div>
+      <div class="lbl">Total discount given</div>
+      <div class="num tnum" id="st-disc">—</div>
+      <div class="sub"><b id="st-disc-pct">—</b> of revenue</div>
+    </div>
+    <div class="stat">
+      <div class="sq" style="background:var(--sky);color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></div>
+      <div class="lbl">Total sale</div>
+      <div class="num tnum" id="st-sale">—</div>
+      <div class="sub">this period</div>
+    </div>
+    <div class="stat warn">
+      <div class="sq" style="background:var(--amber-bg);color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
+      <div class="lbl">Entries above 15%</div>
+      <div class="num tnum" id="st-above">—</div>
+      <div class="sub"><b id="st-above-pct">—</b> of revenue</div>
+    </div>
+    <div class="stat">
+      <div class="sq" style="background:var(--mint);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8a2 2 0 00-2-2h-2M4 12v4a2 2 0 002 2h12a2 2 0 002-2M9 6V4h6v2M2 12h20"/></svg></div>
+      <div class="lbl">Non-chargeable (NC)</div>
+      <div class="num tnum" id="st-nc">—</div>
+      <div class="sub"><b id="st-nc-pct">—</b> of revenue</div>
+    </div>
+  </div>
+
+  <div class="minirow">
+    <div class="mini">
+      <div class="sq" style="width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--red-bg);color:var(--red)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4a1 1 0 011-1h11l-2 4 2 4H5"/><path d="M4 21h4"/></svg></div>
+      <div><div class="k">Red-flag entries</div><div class="v tnum" id="st-flag">—</div></div>
+      <div class="spacer"></div>
+      <div class="note" id="flag-note">Entries over cap or awaiting a check</div>
+    </div>
+    <div class="mini">
+      <div class="sq" style="width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--peach);color:var(--amber)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      <div><div class="k">Extra charges</div>
+        <div class="v tnum"><span class="rup">₹</span><input class="cell-in" id="extra" style="width:96px;font-size:19px;padding-left:0" inputmode="numeric"></div></div>
+      <div class="spacer"></div>
+      <div class="note">Add-ons billed outside discount &amp; NC</div>
+    </div>
+  </div>
+
+  <!-- DISCOUNT BREAKDOWN -->
+  <div class="sec-head">
+    <h2>Discount breakdown</h2>
+    <span class="pill" id="d-count">—</span>
+    <span class="spacer"></span>
+    <span class="hint">Share = category discount ÷ revenue · sign in to edit</span>
+  </div>
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th class="l">Category</th>
+        <th>Within 15%</th>
+        <th>Above 15%</th>
+        <th>Total</th>
+        <th class="opt">Share of revenue</th>
+      </tr></thead>
+      <tbody id="d-body"></tbody>
+      <tfoot id="d-foot"></tfoot>
+    </table>
+  </div>
+
+  <!-- NC SUMMARY -->
+  <div class="sec-head">
+    <h2>Non-chargeable summary</h2>
+    <span class="pill" id="n-count">—</span>
+    <span class="spacer"></span>
+    <span class="hint">Bar shows amount vs its policy cap</span>
+  </div>
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th class="l">Category</th>
+        <th>Amount</th>
+        <th>Cap</th>
+        <th class="opt">vs cap</th>
+        <th>Policy</th>
+        <th class="l opt">Note</th>
+      </tr></thead>
+      <tbody id="n-body"></tbody>
+      <tfoot id="n-foot"></tfoot>
+    </table>
+  </div>
+
+  <div class="foot">Shared dashboard · figures are stored in <b>Firebase</b> and update live for everyone. Anyone can view; only signed-in company accounts can edit.</div>
+</div>
+</div><!-- /view-ncd -->
+
+<div class="view" id="view-bar">
+<div class="wrap">
+  <div class="bd-head">
+    <div class="greet">
+      <div class="eyebrow">Moustache F&amp;B</div>
+      <h1>Bar Deals &amp; Reimbursements</h1>
+      <p id="bd-subline">Supplier commitments and monthly claims</p>
+    </div>
+    <div class="spacer" style="flex:1"></div>
+    <div class="bd-filter">
+      <label>Property</label>
+      <select id="bd-prop"><option value="__all">All properties</option></select>
+    </div>
+    <div class="bd-filter">
+      <label>Supplier</label>
+      <select id="bd-supp"><option value="__all">All suppliers</option></select>
+    </div>
+  </div>
+
+  <div class="banner" id="bd-banner"></div>
+
+  <div class="bd-stats">
+    <div class="stat">
+      <div class="sq" style="background:var(--lav);color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18l-7 8v6l-4 2v-8z"/></svg></div>
+      <div class="lbl">Active deals</div>
+      <div class="num tnum" id="bd-deals">—</div>
+      <div class="sub"><b id="bd-supp-count">—</b> suppliers</div>
+    </div>
+    <div class="stat">
+      <div class="sq" style="background:var(--mint);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      <div class="lbl">Total committed reimbursement</div>
+      <div class="num tnum" id="bd-reimb">—</div>
+      <div class="sub">across all deals</div>
+    </div>
+    <div class="stat warn">
+      <div class="sq" style="background:var(--amber-bg);color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></div>
+      <div class="lbl">Claims sent</div>
+      <div class="num tnum" id="bd-sent">—</div>
+      <div class="sub"><b id="bd-sent-note">—</b></div>
+    </div>
+    <div class="stat">
+      <div class="sq" style="background:var(--sky);color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="lbl">Reimbursement received</div>
+      <div class="num tnum" id="bd-recv">—</div>
+      <div class="sub">confirmed back</div>
+    </div>
+  </div>
+
+  <div class="sec-head">
+    <h2>All deals</h2>
+    <span class="pill" id="bd-count">—</span>
+    <span class="spacer" style="flex:1"></span>
+    <span class="hint">Click a row to see items &amp; this month's claim</span>
+  </div>
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th class="l">Supplier</th>
+        <th class="l opt">Property</th>
+        <th class="l opt">Brands</th>
+        <th>Committed</th>
+        <th class="opt">Claimed this month</th>
+        <th>Reimbursement</th>
+        <th class="l">Status</th>
+      </tr></thead>
+      <tbody id="bd-body"></tbody>
+    </table>
+  </div>
+
+  <div class="foot">Bar deals are stored in <b>Firebase</b> and shown live. This view is read-only.</div>
+</div>
+</div><!-- /view-bar -->
+
+<!-- paste modal -->
+<div class="scrim" id="scrim">
+  <div class="modal modal-wrap">
+    <button class="close" id="modalClose">&times;</button>
+    <h3>Paste data from your sheet</h3>
+    <p class="lead" id="pasteLead">Select the cells in Google Sheets / Excel, copy, and paste below. You can paste one table or the whole summary at once.</p>
+    <div class="steps">Works with: the <b>discount category rows</b>, the <b>NC category rows</b>, a <b>Total Sale</b> cell, and the <b>From / To</b> dates — the dashboard sorts each row into the right place automatically. This updates the property currently selected above, for everyone.</div>
+    <textarea id="pasteArea" placeholder="Paste here…  e.g.
+7. F&B OTA	₹39,499		2.6%
+5. Owner Discount	₹244	₹3,806	0.3%
+Total Sale	₹1,515,463"></textarea>
+    <div class="row">
+      <button class="btn ghost" id="modalCancel">Cancel</button>
+      <button class="btn primary" id="applyPaste">Update dashboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ============================================================
+     Firebase SDK (v10, module build loaded from the CDN)
+     ============================================================ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ============================================================
+   1) CONFIG — REPLACE THESE TWO THINGS
+   ============================================================ */
+
+// (a) Paste your Firebase project config here (from the setup guide, Step 4)
+const firebaseConfig = {
+  apiKey: "AIzaSyAyIf3HFpSKt9F17H82rBkIvqdgqRVW2HI",
+  authDomain: "moustache-bar-dashboard.firebaseapp.com",
+  projectId: "moustache-bar-dashboard",
+  storageBucket: "moustache-bar-dashboard.firebasestorage.app",
+  messagingSenderId: "818303973324",
+  appId: "1:818303973324:web:10d7665c1a614738b9cf69"
+};
+
+// (b) The company email domain allowed to EDIT (lowercase, no "@")
+const EDITOR_DOMAIN = "moustachescapes.com";
+
+// The properties shown in the dropdown
+const PROPERTIES = [
+  "Verandah Udaipur",
+  "Moustache Jaipur",
+  "Moustache Pushkar",
+  "Moustache Delhi",
+];
+
+/* ---------- Bar Deals seed (from July 2026 sheet) ---------- */
+const BARDEALS_SEED = {"deals": [{"id": "ms2v5hdza2492", "property": "Udaipur Verandah", "supplier": "Suntory Udaipur", "brand": "Teachers Reserve, Teachers 50, Suntory Whiskey, Jim Beam White, Oaksmith Gold", "items": [{"name": "Teachers Reserve", "qty": 6, "price": 1506.5}, {"name": "Teachers 50", "qty": 6, "price": 1794.5}, {"name": "Suntory Whiskey", "qty": 2, "price": 2977.5}, {"name": "Jim Beam White", "qty": 6, "price": 1300}, {"name": "Oaksmith Gold", "qty": 12, "price": 741}], "unit": "bottles", "terms": "Total Amount 42453 Reimbursed Amount of 12634", "committed": 32, "reimburse": 12634, "start": "2026-07-01", "end": "2026-07-31", "period": "month"}, {"id": "ms2vz6l7mwlsy", "property": "Udaipur Verandah", "supplier": "Kingfisher", "brand": "Kingfisher Ultra, Heineken, Kingfisher Ultra Max", "items": [{"name": "Kingfisher Ultra", "qty": 50, "price": 0}, {"name": "Heineken", "qty": 50, "price": 0}, {"name": "Kingfisher Ultra Max", "qty": 50, "price": 0}], "unit": "cases", "terms": "", "committed": 150, "reimburse": 52500, "start": "2026-07-01", "end": "2026-12-31", "period": "total"}, {"id": "ms2x46oum0vmm", "property": "Udaipur Verandah", "supplier": "Ab InBev", "brand": "Budweiser, Corona, Hoegaarden", "items": [{"name": "Budweiser", "qty": 10, "price": 0}, {"name": "Corona", "qty": 5, "price": 0}, {"name": "Hoegaarden", "qty": 5, "price": 0}], "unit": "cases", "period": "total", "terms": "250/Case", "committed": 20, "reimburse": 5000, "start": "2026-07-01", "end": "2026-08-31"}, {"id": "ms2xaw0hy349i", "property": "Udaipur Verandah", "supplier": "Parnod", "brand": "The Glenlivet 12yr, Chivas 12yr, Jameson Irish, Ballantine Finest, Beefeater Gin, Absolute Vodka, 100 Pipers 12yr, Jacob Creek Shiraz, Jacob Chardonnay, Ballantine 7", "items": [{"name": "The Glenlivet 12yr", "qty": 6, "price": 0}, {"name": "Chivas 12yr", "qty": 12, "price": 0}, {"name": "Jameson Irish", "qty": 12, "price": 0}, {"name": "Ballantine Finest", "qty": 6, "price": 0}, {"name": "Beefeater Gin", "qty": 12, "price": 0}, {"name": "Absolute Vodka", "qty": 12, "price": 0}, {"name": "100 Pipers 12yr", "qty": 6, "price": 0}, {"name": "Jacob Creek Shiraz", "qty": 12, "price": 0}, {"name": "Jacob Chardonnay", "qty": 12, "price": 0}, {"name": "Ballantine 7", "qty": 3, "price": 0}], "unit": "bottles", "period": "total", "terms": "", "committed": 93, "reimburse": 35565, "start": "2026-07-01", "end": "2026-08-31"}, {"id": "ms2xf6xo5qy90", "property": "Udaipur Verandah", "supplier": "Fratelli", "brand": "Fratelli Wine, Purchase of 5 Mixed Brand 1000 Per Case", "items": [{"name": "Fratelli Wine", "qty": 0, "price": 0}, {"name": "Purchase of 5 Mixed Brand 1000 Per Case", "qty": 0, "price": 0}], "unit": "cases", "period": "total", "terms": "1. 800 Per Case 2. Purchase of 5 Mixed Brand 1000 Per Case", "committed": 0, "reimburse": 0, "start": "2026-07-01", "end": "2026-07-31"}, {"id": "ms2xqot8o5zn4", "property": "Jaipur The 7", "supplier": "Suntory", "brand": "Oaksmith Gold, Teachers Highland, Teachers 50, Teachers Golden, Jim Beam White", "items": [{"name": "Oaksmith Gold", "qty": 12, "price": 0}, {"name": "Teachers Highland", "qty": 12, "price": 0}, {"name": "Teachers 50", "qty": 12, "price": 0}, {"name": "Teachers Golden", "qty": 6, "price": 0}, {"name": "Jim Beam White", "qty": 12, "price": 0}], "unit": "bottles", "period": "month", "terms": "", "committed": 54, "reimburse": 21800, "start": "2026-07-01", "end": "2026-07-31"}, {"id": "ms6znc1aazohj", "property": "Jaipur The 7", "supplier": "AB Inbev", "brand": "Budweiser, Corona, Hoegaarden, Budweiser Magnum", "items": [{"name": "Budweiser", "qty": 30, "price": 0}, {"name": "Corona", "qty": 30, "price": 0}, {"name": "Hoegaarden", "qty": 30, "price": 0}, {"name": "Budweiser Magnum", "qty": 30, "price": 0}], "unit": "cases", "period": "total", "terms": "33000", "committed": 120, "reimburse": 33000, "start": "2026-07-01", "end": "2026-09-30"}, {"id": "ms6zrjyo1n7e6", "property": "Jaipur The 7", "supplier": "Kingfisher", "brand": "Kingfisher Ultra, Kingfisher Ultra Max, Heineken", "items": [{"name": "Kingfisher Ultra", "qty": 80, "price": 0}, {"name": "Kingfisher Ultra Max", "qty": 80, "price": 0}, {"name": "Heineken", "qty": 40, "price": 0}], "unit": "cases", "period": "total", "terms": "70000", "committed": 200, "reimburse": 70000, "start": "2026-07-01", "end": "2026-12-31"}], "claims": [{"id": "ms2vjwerfdddp", "dealId": "ms2v5hdza2492", "month": "2026-07", "qty": 32, "claimSent": "2026-07-27", "received": null, "receivedDate": null, "remarks": "", "byItem": {"Jim Beam White": 6, "Oaksmith Gold": 12, "Teachers Reserve": 6, "Suntory Whiskey": 2, "Teachers 50": 6}}, {"id": "ms2wf0ps6nfg8", "dealId": "ms2vz6l7mwlsy", "month": "2026-07", "qty": 15, "claimSent": null, "received": null, "receivedDate": null, "remarks": "", "byItem": {"Kingfisher Ultra": 8, "Heineken": 3, "Kingfisher Ultra Max": 4}}, {"id": "ms2x4icrierfj", "dealId": "ms2x46oum0vmm", "month": "2026-07", "qty": 6, "claimSent": null, "received": null, "receivedDate": null, "remarks": "", "byItem": {"Corona": 4, "Hoegaarden": 2}}, {"id": "ms2xfpm6kzy5y", "dealId": "ms2xf6xo5qy90", "month": "2026-07", "qty": 6, "claimSent": null, "received": null, "receivedDate": null, "remarks": "", "byItem": {"Fratelli Wine": 6}}, {"id": "ms6zstjo4dbaw", "dealId": "ms6zrjyo1n7e6", "month": "2026-07", "qty": 31, "claimSent": null, "received": null, "receivedDate": null, "remarks": "", "byItem": {"Kingfisher Ultra": 25, "Kingfisher Ultra Max": 5, "Heineken": 1}}, {"id": "ms6zw7okpqxrs", "dealId": "ms6znc1aazohj", "month": "2026-07", "qty": 33, "claimSent": null, "received": null, "receivedDate": null, "remarks": "", "byItem": {"Budweiser": 16, "Corona": 11, "Hoegaarden": 6}}]};
+
+
+/* ============================================================
+   2) APP STATE
+   ============================================================ */
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+let currentProperty = PROPERTIES[0];
+let state = seed();          // the data currently on screen
+let user  = null;            // signed-in Google user, or null
+let canEdit = false;         // true only for company-domain accounts
+let unsub = null;            // active Firestore listener (so we can detach on switch)
+let writingLocally = false;  // guards against our own writes echoing back mid-typing
+
+/* default seed data (used only when a property has no saved doc yet) */
+function seed(){
+  return {
+    from:"2026-06-01", to:"2026-06-30",
+    totalSale:1515463, extra:3454,
+    discount:[
+      {name:"Local Authorities",        within:null, above:null},
+      {name:"Service Recovery",         within:null, above:null},
+      {name:"Moustache Employees",      within:null, above:180},
+      {name:"Marketing (Influencer/Shoot)", within:1090, above:null},
+      {name:"Owner Discount",           within:244,  above:3806},
+      {name:"Guest Promotional",        within:null, above:3496},
+      {name:"F&B OTA",                  within:39499,above:null},
+    ],
+    nc:[
+      {name:"Local Authorities", amt:null, cap:null, policy:"Yes", note:""},
+      {name:"Service Recovery",  amt:null, cap:5000, policy:"Yes", note:""},
+      {name:"Corporate Team",    amt:null, cap:null, policy:"Yes", note:""},
+      {name:"Marketing / Influencer", amt:7618, cap:10000, policy:"Yes", note:"Photo shoot ₹7,618 · NC-227 · needs a check"},
+      {name:"Food Trial",        amt:null, cap:null, policy:"Yes", note:""},
+      {name:"GM Discretionary",  amt:null, cap:5000, policy:"Yes", note:""},
+    ],
+  };
+}
+
+/* Firestore path: one document per property */
+function propDocRef(){ return doc(db, "dashboards", currentProperty); }
+
+/* ============================================================
+   3) HELPERS
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const money=n=>"₹"+Math.round(+n||0).toLocaleString("en-US");
+const pct=(a,b)=>b>0?(a/b*100):0;
+const fpct=x=>x.toFixed(1)+"%";
+function parseNum(s){if(s===null||s===undefined)return null;s=(""+s).replace(/[₹,rsRS\s]/g,"").replace(/[^0-9.\-]/g,"");if(s==="")return null;const n=parseFloat(s);return isNaN(n)?null:n;}
+function esc(s){return(""+(s??"")).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(iso){if(!iso)return"—";const[y,m,d]=iso.split("-");return `${+d} ${MON[+m-1]} ${y}`;}
+
+function totals(){
+  const dW=state.discount.reduce((s,r)=>s+(+r.within||0),0);
+  const dA=state.discount.reduce((s,r)=>s+(+r.above||0),0);
+  const dTot=dW+dA;
+  const nc=state.nc.reduce((s,r)=>s+(+r.amt||0),0);
+  let flags=0;
+  state.nc.forEach(r=>{
+    const over=(r.cap!=null&&r.amt!=null&&+r.amt>+r.cap);
+    const bad=(r.policy||"").toLowerCase()==="no";
+    const check=/check/i.test(r.note||"");
+    if(over||bad||check)flags++;
+  });
+  return {dW,dA,dTot,nc,flags,sale:+state.totalSale||0};
+}
+
+/* ============================================================
+   4) FIRESTORE: live subscribe + save
+   ============================================================ */
+function subscribeProperty(){
+  if(unsub){unsub();unsub=null;}       // detach old listener
+  setBanner("info","Loading "+currentProperty+" …");
+  unsub = onSnapshot(propDocRef(),
+    snap=>{
+      if(writingLocally) return;        // ignore the echo of our own write
+      if(snap.exists()){
+        state = snap.data();
+        clearBanner();
+      }else{
+        // no doc yet → show the seed, but don't create it unless an editor saves
+        state = seed();
+        setBanner("info","No saved data yet for "+currentProperty+". "+(canEdit?"Your edits will create it.":"An editor needs to add figures."));
+      }
+      render();
+    },
+    err=>{
+      console.error(err);
+      setBanner("err","Couldn't load data — check your internet or the Firebase setup. ("+err.code+")");
+    }
+  );
+}
+
+async function saveProperty(){
+  if(!canEdit){toast("Sign in with a company account to edit.",true);return;}
+  try{
+    writingLocally=true;
+    await setDoc(propDocRef(), {
+      ...state,
+      _updatedBy: user? user.email : "unknown",
+      _updatedAt: Date.now()
+    });
+    setTimeout(()=>{writingLocally=false;},400);
+  }catch(err){
+    writingLocally=false;
+    console.error(err);
+    if(err.code==="permission-denied"){
+      toast("You don't have permission to edit. Use a company account.",true);
+    }else{
+      toast("Save failed: "+err.code,true);
+    }
+  }
+}
+
+/* ============================================================
+   5) AUTH
+   ============================================================ */
+function computeCanEdit(u){
+  if(!u||!u.email) return false;
+  const domain = u.email.split("@")[1]?.toLowerCase() || "";
+  return domain === EDITOR_DOMAIN.toLowerCase();
+}
+
+function renderAuth(){
+  const box=$("authbox");
+  if(!user){
+    box.innerHTML=`<button class="gbtn" id="signInBtn">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 010-4.22V7.05H2.18a11 11 0 000 9.9l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 002.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+      Sign in with Google</button>`;
+    $("signInBtn").onclick=doSignIn;
+  }else{
+    const role = canEdit ? `<span class="rl editor">Editor</span>` : `<span class="rl viewer">View only</span>`;
+    box.innerHTML=`<div class="who"><span class="nm">${esc(user.displayName||user.email)}</span>${role}</div>
+      <button class="lnk" id="signOutBtn">Sign out</button>`;
+    $("signOutBtn").onclick=()=>signOut(auth);
+  }
+}
+
+async function doSignIn(){
+  try{ await signInWithPopup(auth, provider); }
+  catch(err){ console.error(err); toast("Sign-in cancelled or failed.",true); }
+}
+
+onAuthStateChanged(auth, u=>{
+  user = u;
+  canEdit = computeCanEdit(u);
+  renderAuth();
+  applyEditability();
+  if(u && !canEdit){
+    setBanner("warn","Signed in as "+u.email+", but only <b>@"+EDITOR_DOMAIN+"</b> accounts can edit. You're viewing in read-only mode.");
+  }else if(u && canEdit){
+    clearBanner();
+  }
+});
+
+/* enable/disable every input based on canEdit */
+function applyEditability(){
+  const dis = !canEdit;
+  document.querySelectorAll(".cell-in, #from, #to").forEach(el=>{el.disabled=dis;});
+  $("pasteBtn").disabled = dis;
+  $("resetBtn").disabled = dis;
+}
+
+/* ============================================================
+   6) RENDER
+   ============================================================ */
+function render(){
+  $("propSel").value=currentProperty;
+  $("from").value=state.from||"";
+  $("to").value=state.to||"";
+  $("extra").value=state.extra!=null?(+state.extra).toLocaleString("en-US"):"";
+  $("subline").textContent=`${currentProperty} · ${fmtDate(state.from)} – ${fmtDate(state.to)}`;
+  renderDiscount();
+  renderNC();
+  updateDerived();
+  applyEditability();
+}
+
+function renderDiscount(){
+  const body=$("d-body");
+  body.innerHTML=state.discount.map((r,i)=>{
+    const hot=(+r.above||0)>0;
+    return `<tr class="${hot?'hot':''}" data-di="${i}">
+      <td class="l"><div class="cat"><span class="n">${i+1}</span><span class="nm">${esc(r.name)}</span></div></td>
+      <td><span class="rup">₹</span><input class="cell-in dW ${r.within==null?'empty':''}" data-di="${i}" data-f="within" inputmode="numeric" value="${r.within!=null?(+r.within).toLocaleString('en-US'):''}" placeholder="0"></td>
+      <td><span class="rup">₹</span><input class="cell-in dA ${r.above==null?'empty':''}" data-di="${i}" data-f="above" inputmode="numeric" value="${r.above!=null?(+r.above).toLocaleString('en-US'):''}" placeholder="0"></td>
+      <td class="tnum d-rowtot">—</td>
+      <td class="opt"><div class="share"><span class="track"><i></i></span><span class="pc d-rowpc">—</span></div></td>
+    </tr>`;
+  }).join("");
+  $("d-count").textContent=state.discount.length;
+}
+
+function renderNC(){
+  const body=$("n-body");
+  body.innerHTML=state.nc.map((r,i)=>{
+    const capTxt=r.cap==null?'<span class="pill2 na">No cap</span>':money(r.cap);
+    const over=(r.cap!=null&&r.amt!=null&&+r.amt>+r.cap);
+    const policy=(r.policy||"").toLowerCase();
+    const ppill=policy==="no"?`<span class="pill2 no">Breach</span>`:policy==="yes"?`<span class="pill2 ok">Within</span>`:`<span class="pill2 na">—</span>`;
+    let cap="";
+    if(r.cap!=null){
+      const w=Math.min(100,Math.round(pct(+r.amt||0,+r.cap)));
+      cap=`<div class="capbar ${over?'over':''}"><span class="track"><i style="width:${w}%"></i></span></div>`;
+    }else{cap='<span class="det" style="text-align:right">—</span>';}
+    const flag=/check/i.test(r.note||"")?`<span class="flagtag">Need to check</span>`:"";
+    return `<tr data-ni="${i}">
+      <td class="l"><div class="cat"><span class="n">${i+1}</span><span class="nm">${esc(r.name)}</span></div></td>
+      <td><span class="rup">₹</span><input class="cell-in nA ${r.amt==null?'empty':''}" data-ni="${i}" data-f="amt" inputmode="numeric" value="${r.amt!=null?(+r.amt).toLocaleString('en-US'):''}" placeholder="0"></td>
+      <td>${capTxt}</td>
+      <td class="opt">${cap}</td>
+      <td>${ppill}</td>
+      <td class="l opt"><div class="det">${flag}${flag&&r.note?' ':''}${esc(r.note||"")}</div></td>
+    </tr>`;
+  }).join("");
+  $("n-count").textContent=state.nc.length;
+}
+
+function updateDerived(){
+  const t=totals();
+  $("st-disc").textContent=money(t.dTot);
+  $("st-disc-pct").textContent=fpct(pct(t.dTot,t.sale));
+  $("st-sale").textContent=money(t.sale);
+  $("st-above").textContent=money(t.dA);
+  $("st-above-pct").textContent=fpct(pct(t.dA,t.sale));
+  $("st-nc").textContent=money(t.nc);
+  $("st-nc-pct").textContent=fpct(pct(t.nc,t.sale));
+  $("st-flag").textContent=t.flags;
+  $("flag-note").textContent=t.flags?`${t.flags} entr${t.flags>1?'ies':'y'} over cap or awaiting a check`:"Nothing over cap — all clear";
+
+  let maxShare=0;
+  state.discount.forEach(r=>{const tot=(+r.within||0)+(+r.above||0);maxShare=Math.max(maxShare,pct(tot,t.sale));});
+  document.querySelectorAll("#d-body tr").forEach(tr=>{
+    const i=+tr.dataset.di,r=state.discount[i];
+    const tot=(+r.within||0)+(+r.above||0);
+    const p=pct(tot,t.sale);
+    tr.querySelector(".d-rowtot").textContent=tot>0?money(tot):"—";
+    tr.querySelector(".d-rowpc").textContent=fpct(p);
+    tr.querySelector(".share i").style.width=(maxShare>0?(p/maxShare*100):0)+"%";
+  });
+
+  $("d-foot").innerHTML=`<tr class="trow">
+    <td class="l"><div class="cat"><span class="n">Σ</span><span class="nm">Total</span></div></td>
+    <td class="tnum">${money(t.dW)}</td>
+    <td class="tnum">${money(t.dA)}</td>
+    <td class="tnum">${money(t.dTot)}</td>
+    <td class="opt"><div class="share"><span class="track"><i style="width:100%"></i></span><span class="pc">${fpct(pct(t.dTot,t.sale))}</span></div></td>
+  </tr>`;
+
+  $("n-foot").innerHTML=`<tr class="trow">
+    <td class="l"><div class="cat"><span class="n">Σ</span><span class="nm">Total NC</span></div></td>
+    <td class="tnum">${money(t.nc)}</td>
+    <td>${fpct(pct(t.nc,t.sale))} of revenue</td>
+    <td class="opt"></td><td></td><td class="l opt"></td>
+  </tr>`;
+}
+
+/* ============================================================
+   7) EDITING → write to Firestore (debounced)
+   ============================================================ */
+let saveTimer=null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveProperty, 600);   // batch quick keystrokes
+}
+
+document.addEventListener("input",e=>{
+  const el=e.target;
+  if(!el.classList.contains("cell-in"))return;
+  if(!canEdit)return;
+  const v=parseNum(el.value);
+  if("di"in el.dataset){state.discount[+el.dataset.di][el.dataset.f]=v;}
+  else if("ni"in el.dataset){state.nc[+el.dataset.ni][el.dataset.f]=v;}
+  else if(el.id==="extra"){state.extra=v;}
+  el.classList.toggle("empty",v==null);
+  updateDerived();
+  scheduleSave();
+});
+
+document.addEventListener("change",e=>{
+  const el=e.target;
+  if(!canEdit)return;
+  if(el.id==="from"){state.from=el.value;scheduleSave();}
+  if(el.id==="to"){state.to=el.value;scheduleSave();}
+  if(el.classList.contains("cell-in")){
+    const v=parseNum(el.value);
+    el.value=v!=null?v.toLocaleString("en-US"):"";
+  }
+});
+
+/* ============================================================
+   8) PROPERTY SWITCH  → resubscribe to that property's live doc
+   ============================================================ */
+function initPropSelect(){
+  const sel=$("propSel");
+  sel.innerHTML=PROPERTIES.map(p=>`<option value="${esc(p)}" ${p===currentProperty?"selected":""}>${esc(p)}</option>`).join("");
+  sel.value=currentProperty;
+  sel.addEventListener("change",e=>{
+    currentProperty=e.target.value;
+    subscribeProperty();              // detaches old listener, attaches new → data swaps live
+  });
+}
+
+/* ============================================================
+   9) PASTE parsing (unchanged logic; writes to Firestore after)
+   ============================================================ */
+function norm(s){return(""+s).toLowerCase().replace(/^\s*\d+[\.\)]\s*/,"").replace(/[^a-z0-9]/g,"");}
+function matchIndex(name,list){
+  const k=norm(name);if(!k)return -1;
+  for(let i=0;i<list.length;i++){const t=norm(list[i].name);if(t===k||t.includes(k)||k.includes(t))return i;}
+  return -1;
+}
+function looksPolicy(s){return/^(yes|no|na|n\/a)$/i.test((""+s).trim());}
+
+function applyPastedText(text){
+  if(!text||!text.trim())return {msg:"Nothing to paste.",err:true};
+  const lines=text.replace(/\r/g,"").split("\n").filter(l=>l.trim()!=="");
+  let section=null, d=0,n=0,meta=[];
+  const dNames=state.discount, nNames=state.nc;
+  lines.forEach(line=>{
+    const low=line.toLowerCase();
+    const cells=line.split("\t").map(c=>c.trim());
+    const nonEmpty=cells.filter(c=>c).length;
+    if(nonEmpty<=1){
+      if(/breakdown/.test(low)&&/disc/.test(low)){section="disc";return;}
+      if(/non-?chargeable|category summary|^\s*nc\b/.test(low)){section="nc";return;}
+    }
+    const sale=low.match(/total\s*sale/);
+    if(sale){const m=line.match(/([\d,]+(\.\d+)?)/g);if(m){const v=parseNum(m[m.length-1]);if(v){state.totalSale=v;meta.push("total sale");}}return;}
+    if(/extra\s*chg|extra\s*charge/.test(low)){const v=parseNum(cells[cells.length-1]);if(v!=null){state.extra=v;meta.push("extra charges");}return;}
+    const iso=line.match(/\d{4}-\d{2}-\d{2}/g);
+    if(iso&&/from|reporting/.test(low)){state.from=iso[0];if(iso[1])state.to=iso[1];meta.push("dates");return;}
+    if(iso&&/to\b/.test(low)&&iso.length){state.to=iso[iso.length-1];meta.push("dates");return;}
+    const name=cells[0]||"";
+    if(!name)return;
+    if(/^(category|nc category|total|key numbers)$/i.test(name.trim()))return;
+    const di=matchIndex(name,dNames);
+    const ni=matchIndex(name,nNames);
+    const hasPolicy=cells.some(looksPolicy);
+    let route=section;
+    if(!route){
+      if(hasPolicy&&ni>=0)route="nc";
+      else if(di>=0)route="disc";
+      else if(ni>=0)route="nc";
+    }else if(route==="disc"&&di<0&&ni>=0&&hasPolicy)route="nc";
+    else if(route==="nc"&&ni<0&&di>=0&&!hasPolicy)route="disc";
+    if(route==="disc"&&di>=0){
+      dNames[di].within=parseNum(cells[1]);
+      dNames[di].above=parseNum(cells[2]);
+      d++;
+    }else if(route==="nc"&&ni>=0){
+      const amt=parseNum(cells[1]);
+      const capRaw=(cells[2]||"").trim();
+      const cap=/^na$|^n\/a$/i.test(capRaw)?null:parseNum(capRaw);
+      nNames[ni].amt=amt;
+      if(capRaw!=="")nNames[ni].cap=cap;
+      const pol=cells.find(looksPolicy);if(pol)nNames[ni].policy=/no/i.test(pol)?"No":/na|n\/a/i.test(pol)?"NA":"Yes";
+      const det=cells.slice(4).filter(x=>x&&!looksPolicy(x)).join(" · ");
+      if(det)nNames[ni].note=det;
+      n++;
+    }
+  });
+  render();
+  saveProperty();
+  if(!d&&!n&&!meta.length)return {msg:"Couldn't match any rows — check you copied the category cells.",err:true};
+  const parts=[];
+  if(d)parts.push(`${d} discount row${d>1?'s':''}`);
+  if(n)parts.push(`${n} NC row${n>1?'s':''}`);
+  if(meta.length)parts.push([...new Set(meta)].join(", "));
+  return {msg:"Updated "+currentProperty+" · "+parts.join(" · "),err:false};
+}
+
+/* ============================================================
+   10) MODAL / TOAST / BANNER / BUTTONS
+   ============================================================ */
+function openModal(){
+  if(!canEdit){toast("Sign in with a company account to edit.",true);return;}
+  $("pasteLead").textContent=`Paste the copied cells below to update ${currentProperty} for everyone.`;
+  $("scrim").classList.add("on");$("pasteArea").value="";setTimeout(()=>$("pasteArea").focus(),40);
+}
+function closeModal(){$("scrim").classList.remove("on");}
+let toastT;
+function toast(msg,err){const t=$("toast");t.innerHTML=(err?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>')+esc(msg);t.classList.toggle("err",!!err);t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),3200);}
+function setBanner(kind,html){const b=$("banner");b.className="banner show "+kind;b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><span>'+html+'</span>';}
+function clearBanner(){$("banner").className="banner";}
+
+$("pasteBtn").onclick=openModal;
+$("modalClose").onclick=closeModal;
+$("modalCancel").onclick=closeModal;
+$("scrim").addEventListener("click",e=>{if(e.target===$("scrim"))closeModal();});
+$("applyPaste").onclick=()=>{const r=applyPastedText($("pasteArea").value);closeModal();toast(r.msg,r.err);};
+$("pasteArea").addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){$("applyPaste").click();}});
+$("printBtn").onclick=()=>window.print();
+$("resetBtn").onclick=()=>{
+  if(!canEdit){toast("Sign in with a company account to edit.",true);return;}
+  if(confirm(`Reset ${currentProperty} to the sample June figures for everyone?`)){state=seed();render();saveProperty();toast("Reset "+currentProperty);}
+};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+/* ============================================================
+   11) BOOT
+   ============================================================ */
+/* ============================================================
+   BAR DEALS — read-only, live from Firestore
+   ============================================================ */
+let barData = { deals: [], claims: [] };
+let barUnsub = null;
+const barDocRef = () => doc(db, "bardeals", "all");
+
+function subscribeBarDeals(){
+  if(barUnsub) return;                      // subscribe once
+  barUnsub = onSnapshot(barDocRef(),
+    snap=>{
+      if(snap.exists()){
+        barData = snap.data();
+        bdClearBanner();
+      }else{
+        barData = BARDEALS_SEED;            // show seed if nothing saved yet
+        bdBanner("info","Showing the starter data from your sheet. "+(canEdit?"It'll be saved to the shared database automatically.":"An editor can save it to share it live."));
+        if(canEdit) seedBarDealsOnce();     // an editor viewing → persist the seed
+      }
+      renderBarDeals();
+    },
+    err=>{ console.error(err); bdBanner("err","Couldn't load bar deals ("+err.code+")."); }
+  );
+}
+
+async function seedBarDealsOnce(){
+  try{
+    await setDoc(barDocRef(), { ...BARDEALS_SEED, _seededBy:user?user.email:"", _seededAt:Date.now() });
+  }catch(e){ /* non-editors will fail silently; that's fine */ }
+}
+
+const bdMoney = n => "₹"+Math.round(+n||0).toLocaleString("en-US");
+function fmtISO(iso){ if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${+d} ${MON[+m-1]} ${y}`; }
+function claimForDeal(id){ return (barData.claims||[]).find(c=>c.dealId===id) || null; }
+
+function bdBanner(kind,html){const b=$("bd-banner");b.className="banner show "+kind;b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><span>'+html+'</span>';}
+function bdClearBanner(){$("bd-banner").className="banner";}
+
+function bdPopulateFilters(){
+  const props=[...new Set((barData.deals||[]).map(d=>d.property))].sort();
+  const supps=[...new Set((barData.deals||[]).map(d=>d.supplier))].sort();
+  const pv=$("bd-prop").value||"__all", sv=$("bd-supp").value||"__all";
+  $("bd-prop").innerHTML='<option value="__all">All properties</option>'+props.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("");
+  $("bd-supp").innerHTML='<option value="__all">All suppliers</option>'+supps.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  $("bd-prop").value=props.includes(pv)?pv:"__all";
+  $("bd-supp").value=supps.includes(sv)?sv:"__all";
+}
+
+function bdFiltered(){
+  const p=$("bd-prop").value, s=$("bd-supp").value;
+  return (barData.deals||[]).filter(d=>(p==="__all"||d.property===p)&&(s==="__all"||d.supplier===s));
+}
+
+function renderBarDeals(){
+  bdPopulateFilters();
+  const deals=bdFiltered();
+  const claims=barData.claims||[];
+
+  const ids=new Set(deals.map(d=>d.id));
+  const fclaims=claims.filter(c=>ids.has(c.dealId));
+  const totalReimb=deals.reduce((s,d)=>s+(+d.reimburse||0),0);
+  const sent=fclaims.filter(c=>c.claimSent).length;
+  const recv=fclaims.filter(c=>c.received).reduce((s,c)=>s+(+c.received||0),0);
+  const suppCount=new Set(deals.map(d=>d.supplier)).size;
+  $("bd-deals").textContent=deals.length;
+  $("bd-supp-count").textContent=suppCount;
+  $("bd-reimb").textContent=bdMoney(totalReimb);
+  $("bd-sent").textContent=sent;
+  $("bd-sent-note").textContent=`${fclaims.length} claim${fclaims.length!==1?'s':''} logged`;
+  $("bd-recv").textContent=bdMoney(recv);
+  $("bd-count").textContent=deals.length;
+
+  $("bd-body").innerHTML = deals.map(d=>{
+    const c=claimForDeal(d.id);
+    const claimedQty=c?(+c.qty||0):0;
+    const pctDone=d.committed>0?Math.min(100,Math.round(claimedQty/d.committed*100)):0;
+    const isMonth=(d.period==="month");
+    let status;
+    if(c&&c.received) status='<span class="status-pill recv">Received</span>';
+    else if(c&&c.claimSent) status='<span class="status-pill sent">Claim sent</span>';
+    else if(c) status='<span class="status-pill none">Claim pending</span>';
+    else status='<span class="status-pill none">No claim yet</span>';
+    const periodTag=isMonth?'<span class="status-pill period">Monthly</span>':'<span class="status-pill period">Full term</span>';
+
+    const itemsHtml=(d.items||[]).filter(it=>it.name).map(it=>`<span class="chip">${esc(it.name)}<b>${it.qty||0}</b></span>`).join("");
+    let claimHtml='<div class="claimline">No claim logged for this deal yet.</div>';
+    if(c){
+      const parts=Object.entries(c.byItem||{}).map(([k,v])=>`<span class="chip">${esc(k)}<b>${v}</b></span>`).join("");
+      claimHtml=`<div class="claimline"><b>${c.month}</b> · claimed <b>${c.qty} ${esc(d.unit||"")}</b>${c.claimSent?` · sent ${fmtISO(c.claimSent)}`:" · not sent yet"}${c.received?` · received ${bdMoney(c.received)}`:""}${c.remarks?` · ${esc(c.remarks)}`:""}</div><div class="items" style="margin-top:8px">${parts}</div>`;
+    }
+
+    return `<tr class="deal-row" data-id="${esc(d.id)}">
+        <td class="l"><div class="cat"><span class="caret">▸</span><span class="nm">${esc(d.supplier)}</span></div></td>
+        <td class="l opt">${esc(d.property)}</td>
+        <td class="l opt"><div class="brandcell">${esc(d.brand||"—")}</div></td>
+        <td class="tnum">${d.committed||0} <span style="color:var(--muted);font-weight:600">${esc(d.unit||"")}</span></td>
+        <td class="opt"><div class="prog"><span class="track"><i class="${pctDone>=100?'full':''}" style="width:${pctDone}%"></i></span><span class="pc">${claimedQty}/${d.committed||0}</span></div></td>
+        <td class="tnum">${bdMoney(d.reimburse)}</td>
+        <td class="l">${status} ${periodTag}</td>
+      </tr>
+      <tr class="subrow" data-sub="${esc(d.id)}" style="display:none"><td colspan="7"><div class="subwrap">
+        <div class="st">Committed items · ${fmtISO(d.start)} – ${fmtISO(d.end)}</div>
+        <div class="items">${itemsHtml||'<span style="color:var(--muted)">No items listed</span>'}</div>
+        ${d.terms?`<div class="st">Terms</div><div class="claimline">${esc(d.terms)}</div>`:""}
+        <div class="st">This month's claim</div>
+        ${claimHtml}
+      </div></td></tr>`;
+  }).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:26px">No deals match this filter.</td></tr>`;
+}
+
+document.addEventListener("click",e=>{
+  const row=e.target.closest(".deal-row");
+  if(!row) return;
+  const id=row.dataset.id;
+  const sub=document.querySelector(`.subrow[data-sub="${CSS.escape(id)}"]`);
+  if(sub){ const open=sub.style.display!=="none"; sub.style.display=open?"none":"table-row"; row.classList.toggle("open",!open); }
+});
+$("bd-prop").addEventListener("change",renderBarDeals);
+$("bd-supp").addEventListener("change",renderBarDeals);
+
+/* ---------- sidebar nav ---------- */
+function switchView(name){
+  document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("on",b.dataset.view===name));
+  $("view-ncd").classList.toggle("on",name==="ncd");
+  $("view-bar").classList.toggle("on",name==="bar");
+  if(name==="bar") subscribeBarDeals();
+}
+// expose so the always-on nav script (below) can trigger the Firebase subscription
+window.__switchView = switchView;
+
+initPropSelect();
+subscribeProperty();     // start listening to the first property's live data
+render();
+</script>
+
+<!-- Sidebar navigation — deliberately OUTSIDE the Firebase module.
+     This guarantees switching works even if Firebase is slow or blocked. -->
+<script>
+(function(){
+  function show(name){
+    document.querySelectorAll(".navbtn").forEach(function(b){ b.classList.toggle("on", b.dataset.view===name); });
+    var ncd=document.getElementById("view-ncd"), bar=document.getElementById("view-bar");
+    if(ncd) ncd.classList.toggle("on", name==="ncd");
+    if(bar) bar.classList.toggle("on", name==="bar");
+    // if Firebase module is ready, let it kick off the bar-deals subscription
+    if(name==="bar" && typeof window.__switchView==="function"){ try{ window.__switchView("bar"); }catch(e){} }
+  }
+  document.querySelectorAll(".navbtn").forEach(function(b){
+    b.addEventListener("click", function(){ show(b.dataset.view); });
+  });
+})();
+</script>
+</body>
+</html>
