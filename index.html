@@ -312,7 +312,7 @@ textarea.box:focus{outline:none;border-color:var(--indigo);background:#fff}
    Uses ONLY these Firestore collections (never touches "bardeals"):
      ncd_config/settings      – categories, caps, lists, properties, editors
      ncd_months/{code}_{YYYY-MM} – eZee entries + property inputs + total sale
-     ncd_review/{code}_{YYYY-MM} – Head Office: mark-green and remarks
+     ncd_review/{code}_{YYYY-MM} – Business Control: mark-green and remarks
      ncd_queries/{id}         – queries to property users, with replies
      ncd_files/{id}           – attachments (stored in chunks)
    ===================================================================== */
@@ -634,7 +634,7 @@ function render(){
 function renderAuth(){
   const box=$("authbox");
   if(!S.user){ box.innerHTML=`<button class="gbtn" data-act="signin">${G_ICON} Sign in with Google</button>`; return; }
-  const rl = S.role==="editor"?`<span class="rl">Editor · Head Office</span>`:S.role==="prop"?`<span class="rl prop">Property user</span>`:`<span class="rl" style="color:var(--red)">No access</span>`;
+  const rl = S.role==="editor"?`<span class="rl">Editor · Business Control</span>`:S.role==="prop"?`<span class="rl prop">Property user</span>`:`<span class="rl" style="color:var(--red)">No access</span>`;
   box.innerHTML=`<div><span class="nm">${esc(S.user.displayName||S.user.email)}</span>${rl}</div><button class="lnk" data-act="signout">Sign out</button>`;
 }
 const G_ICON=`<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 010-4.22V7.05H2.18a11 11 0 000 9.9l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 002.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>`;
@@ -701,13 +701,11 @@ function summaryView(){
       <button class="btn ghost" data-act="print">${I_PRINT} Print / PDF</button></div>`;
   // stats
   const saleCell = (single && isEditor())
-    ? `<input class="salein tnum" data-act="sale" inputmode="numeric" placeholder="Enter total sale" value="${D.saleCount?Math.round(D.sale):""}">`
+    ? `<input class="salein tnum" data-act="sale" inputmode="numeric" placeholder="Enter restaurant revenue" value="${D.saleCount?Math.round(D.sale):""}">`
     : `<div class="num tnum">${D.saleCount?money(D.sale):"—"}</div>`;
-  let ezG=0,ezN=0,ezM=0; D.props.forEach(code=>p.months.forEach(ym=>{ const d=DOCS[code+"_"+ym]; if(d&&d.ezee){ ezG+=+d.ezee.gross||0; ezN+=+d.ezee.net||0; ezM++; } }));
-  const ezLine = ezM ? `<div class="sub" title="From eZee: food & beverage items before tax, excluding NC bills">eZee items ${money(ezG)} · after discount ${money(ezN)}</div>` : "";
-  const saleSub = D.saleCount ? (D.saleMissing?`${D.saleMissing} month(s) without a sale figure`:"this period") : (single&&isEditor()?"type and press Enter · source to be confirmed":"not entered yet");
+  const saleSub = D.saleCount ? (D.saleMissing?`${D.saleMissing} month(s) without a sale figure`:"this period") : (single&&isEditor()?"type and press Enter":"not entered yet");
   h+=`<div class="stats">
-    <div class="stat"><div class="lbl">Total sale</div>${saleCell}<div class="sub">${saleSub}</div>${ezLine}</div>
+    <div class="stat"><div class="lbl" title="Total Restaurant Revenue under F&B Revenue in Moustache MS">Total sale · Restaurant revenue</div>${saleCell}<div class="sub">${saleSub}</div><div class="sub">Source: Moustache MS → F&amp;B Revenue</div></div>
     <div class="stat"><div class="lbl">Total discount</div><div class="num tnum">${money(D.totD)}</div><div class="sub"><b>${D.saleCount?fpct(pct(D.totD,D.sale)):"—"}</b> of revenue</div></div>
     <div class="stat"><div class="lbl">Total NC</div><div class="num tnum">${money(D.totNC)}</div><div class="sub"><b>${D.saleCount?fpct(pct(D.totNC,D.sale)):"—"}</b> of revenue</div></div>
     <div class="stat flag ${D.redCount?"":"zero"}" data-act="goflags"><div class="lbl">Red-flag entries</div><div class="num tnum">${D.redCount}</div><div class="sub">${D.fl.length-D.redCount} marked green · click to view</div></div>
@@ -766,12 +764,11 @@ function summaryView(){
   h+=`<div class="sec-head" id="flags"><h2>Red flags</h2><span class="pill" style="background:var(--red)">${D.redCount}</span>
     <div class="tabs noprint" style="margin-left:8px">${["red","green","all"].map(k=>`<button data-ff="${k}" class="${S.flagFilter===k?"on":""}">${{red:"Red only",green:"Marked green",all:"All"}[k]}</button>`).join("")}</div>
     <span class="spacer"></span>
-    ${isEditor()?`<button class="btn primary noprint" data-act="mail" ${multi?"disabled title='Choose one property to convert to mail'":""}>${I_MAIL} Convert to Mail${S.sel.size?` (${S.sel.size})`:""}</button>`:""}</div>`;
+    <span class="hint noprint">Need clarification? Click a category row above and use <b>Raise query</b>.</span></div>`;
   if(!ff.length) h+=`<div class="panel"><div class="empty">${D.fl.length?"Nothing in this filter.":"No red flags for this selection."}</div></div>`;
-  else h+=`<div class="panel"><table><thead><tr>${isEditor()?`<th class="noprint"><input type="checkbox" data-act="selall" ${ff.filter(f=>!f.green).every(f=>S.sel.has(f.uid))&&ff.some(f=>!f.green)?"checked":""}></th>`:""}
+  else h+=`<div class="panel"><table><thead><tr>
       ${multi?"<th>Property</th>":""}<th>Type</th><th>Month / date</th><th>Category</th><th class="r">Amount</th><th>Why</th><th>NC / REC</th><th>Status</th>${isEditor()?`<th class="noprint"></th>`:""}</tr></thead><tbody>
     ${ff.map(f=>`<tr class="${f.green?"greenrow":"redrow"}">
-      ${isEditor()?`<td class="noprint">${f.green?"":`<input type="checkbox" data-sel="${esc(f.uid)}" ${S.sel.has(f.uid)?"checked":""}>`}</td>`:""}
       ${multi?`<td>${esc(propName(f.prop))}</td>`:""}
       <td>${f.type==="nc"?"NC":"Discount"}${f.isQuery?` <span class="q-pill q-open">Query</span>`:""}</td><td>${f.type==="nc"&&!f.isQuery?ymLabel(f.ym):fmtDate(f.date)}</td><td>${esc(f.cat||"—")}</td>
       <td class="r tnum">${money(f.amount)}</td>
@@ -1024,7 +1021,6 @@ function settingsView(){
     </tbody></table><button class="btn ghost sm" data-act="adddc" style="margin-top:8px">+ Add discount category</button></div>
   <div class="card"><h3>Other lists</h3><p>One item per line. Add a line to add, delete a line to remove.</p>
     <label class="hint">NC categories excluded from the summary (still selectable by properties)</label><textarea class="box" id="s-ex" style="min-height:60px">${esc((C.ncExcluded||[]).join("\n"))}</textarea>
-    <label class="hint">Signed-bill categories (Convert to Mail)</label><textarea class="box" id="s-sb" style="min-height:60px">${esc((C.signedBillCats||[]).join("\n"))}</textarea>
     <label class="hint">NC · Approval required from</label><textarea class="box" id="s-af" style="min-height:70px">${esc(C.ncApprovalFrom.join("\n"))}</textarea>
     <label class="hint">NC · Approval status</label><textarea class="box" id="s-as" style="min-height:70px">${esc(C.ncApprovalStatus.join("\n"))}</textarea>
     <label class="hint">Discount · Approval</label><textarea class="box" id="s-da" style="min-height:70px">${esc(C.discApproval.join("\n"))}</textarea></div>
@@ -1042,7 +1038,7 @@ function settingsView(){
 
   <div class="grid2">
   <div class="card"><h3>Comment name corrections</h3><p>One per line: <b>wrong spelling =&gt; correct name</b>. Case differences and small typos are merged automatically.</p><textarea class="box" id="s-al">${esc(C.aliases||"")}</textarea></div>
-  <div class="card"><h3>Editors (Head Office)</h3><p>One email per line. Editors can mark green, add remarks, convert to mail, enter total sale and change settings. ${esc(MAIN_EDITOR)} is always an editor.</p><textarea class="box" id="s-ed">${esc(C.editors.join("\n"))}</textarea></div>
+  <div class="card"><h3>Editors (Business Control team)</h3><p>One email per line. Editors can review, mark green, add remarks, raise queries, enter total sale and change settings. ${esc(MAIN_EDITOR)} is always an editor.</p><textarea class="box" id="s-ed">${esc(C.editors.join("\n"))}</textarea></div>
   </div>
   <div class="actions" style="position:sticky;bottom:12px"><button class="btn primary" data-act="savecfg">Save settings for everyone</button><span class="hint">Nothing changes for others until you click Save.</span></div>`;
 }
@@ -1059,7 +1055,7 @@ function readSettings(){
   const properties=[...document.querySelectorAll("#s-props tr")].map(tr=>{ const g=s=>tr.querySelector(`[data-s=${s}]`); const name=g("pname").value.trim(), code=g("pcode").value.trim(); return name&&code?{name,code,ezee:g("pezee").value.trim(),gm:g("pgm").value.trim(),reelo:g("preelo").checked}:null; }).filter(Boolean);
   const users=[...document.querySelectorAll("#s-users tr")].map(tr=>{ const em=tr.querySelector("[data-s=uemail]").value.trim().toLowerCase(); return em?{name:tr.querySelector("[data-s=uname]").value.trim()||em,email:em,prop:tr.querySelector("[data-s=uprop]").value}:null; }).filter(Boolean);
   const discCats=[...document.querySelectorAll("#s-dc [data-s=dcname]")].map(i=>i.value.trim()).filter(Boolean);
-  return {ncCats,capOverrides,properties,users,discCats,ncExcluded:lines("s-ex"),signedBillCats:lines("s-sb"),ncApprovalFrom:lines("s-af"),ncApprovalStatus:lines("s-as"),discApproval:lines("s-da"),aliases:$("s-al").value,editors:lines("s-ed").map(s=>s.toLowerCase())};
+  return {ncCats,capOverrides,properties,users,discCats,ncExcluded:lines("s-ex"),ncApprovalFrom:lines("s-af"),ncApprovalStatus:lines("s-as"),discApproval:lines("s-da"),aliases:$("s-al").value,editors:lines("s-ed").map(s=>s.toLowerCase())};
 }
 
 /* =====================================================================
@@ -1073,7 +1069,7 @@ async function saveEntryField(key,fld,val){
 async function submitEntries(){
   const t=S.entType; const ready=entries(t).filter(e=>e.st!=="sub"&&isReady(t,e));
   if(!ready.length) return;
-  if(!confirm(`Submit ${ready.length} ${t==="nc"?"NC":"discount"} entries of ${propName(S.prop)} to Head Office?`)) return;
+  if(!confirm(`Submit ${ready.length} ${t==="nc"?"NC":"discount"} entries of ${propName(S.prop)} to Business Control?`)) return;
   const by={}; ready.forEach(e=>{ ((by[e.ym]=by[e.ym]||{})[e.id]={st:"sub",subBy:S.user.email,subAt:Date.now()}); });
   for(const ym in by) await DATA.merge(C_MONTHS,S.prop+"_"+ym,{[t]:by[ym]});
   toast(`Submitted ${ready.length} entries`);
@@ -1242,7 +1238,7 @@ function threadHtml(id){
     ${canReply?`<label class="hint">Your reply</label><textarea class="box" id="qr-text" placeholder="Type your reply. Attach bills using ＋ above."></textarea><div class="row"><button class="btn primary" data-act="qreply" data-id="${esc(q.id)}">Send reply</button></div>`:""}
     ${canDecide?`<label class="hint">Not satisfied? Add a remark and Re-submit. Otherwise Accept to clear.</label><textarea class="box" id="qr-text" placeholder="Remark (required for Re-submit)"></textarea>
       <div class="row"><button class="btn ghost" data-act="qresubmit" data-id="${esc(q.id)}">Re-submit</button><button class="btn green" data-act="qaccept" data-id="${esc(q.id)}">Accept &amp; clear</button></div>`:""}
-    ${!canReply&&!canDecide?`<p class="hint">${q.status==="cleared"?"This query is cleared.":isOwner?"Waiting for the reply.":"Waiting for Head Office to review your reply."}</p>`:""}`;
+    ${!canReply&&!canDecide?`<p class="hint">${q.status==="cleared"?"This query is cleared.":isOwner?"Waiting for the reply.":"Waiting for Business Control to review your reply."}</p>`:""}`;
 }
 async function qAction(id,kind){
   const q=QUERIES.find(x=>x.id===id); if(!q) return; const text=($("qr-text")&&$("qr-text").value.trim())||"";
@@ -1266,7 +1262,7 @@ function queriesView(){
   <div class="qcounts">
     <button class="qcount ${S.qStatus==="all"?"on":""}" data-qst="all"><div class="k">Raised</div><div class="v">${L.length}</div><div class="hint">total queries</div></button>
     <button class="qcount ${S.qStatus==="pending"?"on":""}" data-qst="pending"><div class="k">Pending</div><div class="v" style="color:var(--red)">${pending.length}</div><div class="hint">Open, Replied or Re Submit</div></button>
-    <button class="qcount ${S.qStatus==="cleared"?"on":""}" data-qst="cleared"><div class="k">Cleared</div><div class="v" style="color:var(--green)">${cleared.length}</div><div class="hint">accepted by Head Office</div></button>
+    <button class="qcount ${S.qStatus==="cleared"?"on":""}" data-qst="cleared"><div class="k">Cleared</div><div class="v" style="color:var(--green)">${cleared.length}</div><div class="hint">accepted by Business Control</div></button>
   </div>
   <div class="panel">${shown.length?`<table><thead><tr><th>Raised</th>${S.prop==="__all"?"<th>Property</th>":""}<th>Entry</th><th>Category</th><th class="r">Amount</th><th>To</th><th>Status</th><th>Latest</th><th></th></tr></thead><tbody>
     ${shown.sort((a,b)=>(b.updatedAt||b.at)-(a.updatedAt||a.at)).map(q=>{ const last=(q.thread||[]).slice(-1)[0]||{};
@@ -1280,43 +1276,12 @@ function maybePopup(force){
   const L=myPending(); if(!L.length){ if(force&&$("modal").dataset.view==="popup") closeModal(); return; }
   if(POPUP_SHOWN && !force) return; if(!force && $("scrim").classList.contains("on")) return;
   POPUP_SHOWN=true;
-  modal(`<button class="x" data-act="close">×</button><h3>🔔 ${L.length} quer${L.length>1?"ies are":"y is"} waiting for your reply</h3><p class="lead">Head Office has asked about these entries. This reminder shows each time you open the dashboard until you reply.</p>
+  modal(`<button class="x" data-act="close">×</button><h3>🔔 ${L.length} quer${L.length>1?"ies are":"y is"} waiting for your reply</h3><p class="lead">Business Control has asked about these entries. This reminder shows each time you open the dashboard until you reply.</p>
     <div class="panel"><table><thead><tr><th>Property</th><th>Entry</th><th>Question</th><th>Status</th><th></th></tr></thead><tbody>
     ${L.map(q=>`<tr><td>${esc(propName(q.prop))}</td><td><b>${esc(q.no)}</b><div class="hint">${esc(q.cat)} · ${money(q.amount)}</div></td><td><div class="det">${esc(((q.thread||[]).slice(-1)[0]||{}).text||q.question)}</div></td><td>${qPill(q)}</td><td><button class="btn primary sm" data-oq="${esc(q.id)}">Reply</button></td></tr>`).join("")}
     </tbody></table></div><div class="row"><button class="btn ghost" data-act="close">Later</button></div>`,true);
   $("modal").dataset.view="popup";
 }
-
-/* ---------- Convert to Mail ---------- */
-function buildMail(){
-  const code=S.prop; const p=propByCode(code)||{}; const per=period();
-  const sel=flags().filter(f=>S.sel.has(f.uid)&&!f.green);
-  const L="abcdefghijklmnopqrstuvwxyz";
-  const sections=[];
-  const grp=(arr)=>{ const m={}; arr.forEach(f=>{ (m[f.cat||"Uncategorised"]=m[f.cat||"Uncategorised"]||[]).push(...f.nos); }); return m; };
-  const ncG=grp(sel.filter(f=>f.type==="nc")), dG=grp(sel.filter(f=>f.type==="disc"));
-  if(Object.keys(ncG).length) sections.push(["NC",Object.entries(ncG).map(([c,n],i)=>`   ${L[i]}. ${compressNos(n)}  (Category: ${c})`).join("\n")+"\n   Kindly provide the supporting documents for the mentioned NCs."]);
-  if(Object.keys(dG).length) sections.push(["Discount",Object.entries(dG).map(([c,n],i)=>`   ${L[i]}. ${compressNos(n)}  (Category: ${c})`).join("\n")+"\n   Kindly provide the supporting documents for the mentioned discounts."]);
-  const sb=CFG.signedBillCats||[]; const sbl=[];
-  sb.forEach(c=>{ const nn=entries("nc",{submitted:true}).filter(e=>e.cat===c).map(e=>e.no); const dn=entries("disc",{submitted:true}).filter(e=>e.cat===c).map(e=>e.no);
-    if(nn.length) sbl.push([c,nn]); if(dn.length) sbl.push([c,dn]); });
-  if(sbl.length) sections.push(["Signed Bills",sbl.map(([c,n],i)=>`   ${L[i]}. ${compressNos(n)}  (Category: ${c})`).join("\n")+"\n   Kindly share the signed bills for the above."]);
-  const label = per.months.length===1&&!per.custom ? ymLabel(per.months[0]) : per.label;
-  const subject=`Request for Clarification and Supporting Documents – ${p.name||code} – ${label}`;
-  const body=`Dear ${p.gm||"[GM Name]"},\nI hope you are doing well.\n\nWe would appreciate your clarification and the relevant supporting documents for the following:\n\n`+
-    sections.map(([h,t],i)=>`${i+1}. ${h}\n${t}`).join("\n\n")+`\n\n\nThanks & Regards,\n${S.user.displayName||S.user.email}`;
-  return {subject,body,count:sel.length,sb:sbl.length};
-}
-function mailModal(){
-  if(S.prop==="__all"){ toast("Choose one property first",true); return; }
-  if(!S.sel.size){ toast("Tick the red-flag entries to include first",true); return; }
-  const m=buildMail();
-  modal(`<h3>Convert to Mail</h3><p class="lead">${m.count} red flag${m.count>1?"s":""} selected${m.sb?" · signed-bill categories added automatically":""}. Review and edit, then copy into your mailbox.</p>
-    <label class="hint">Subject</label><input id="ml-sub" class="fld" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-weight:700;margin:4px 0 12px" value="${esc(m.subject)}">
-    <label class="hint">Message</label><textarea class="mail" id="ml-body">${esc(m.body)}</textarea>
-    <div class="row"><button class="btn ghost" data-act="close">Close</button><button class="btn ghost" data-act="copysub">Copy subject</button><button class="btn primary" data-act="copybody">Copy message</button></div>`,true);
-}
-async function copy(text){ try{ await navigator.clipboard.writeText(text); toast("Copied"); }catch(e){ const t=document.createElement("textarea"); t.value=text; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); toast("Copied"); } }
 
 /* ---------- Download Excel ---------- */
 async function downloadXlsx(){
@@ -1384,10 +1349,6 @@ document.addEventListener("click",async e=>{
   else if(a==="print"){ window.print(); }
   else if(a==="xlsx"){ try{ await downloadXlsx(); }catch(err){ toast(err.message,true); } }
   else if(a==="goflags"){ S.flagFilter="red"; render(); setTimeout(()=>$("flags")&&$("flags").scrollIntoView({behavior:"smooth"}),50); }
-  else if(a==="selall"){ const ff=flags().filter(f=>!f.green); const on=t.checked; ff.forEach(f=>on?S.sel.add(f.uid):S.sel.delete(f.uid)); render(); }
-  else if(a==="mail"){ mailModal(); }
-  else if(a==="copysub"){ copy($("ml-sub").value); }
-  else if(a==="copybody"){ copy($("ml-body").value); }
   else if(a==="dogreen"){ const r=$("gr-remark").value.trim(); if(!r){ toast("Please enter the reason",true); return; } await setGreen(t.dataset.uid,r); closeModal(); toast("Marked green"); }
   else if(a==="rmsave"){ await saveRemark(t.dataset.k,$("rm-text").value.trim()); closeModal(); }
   else if(a==="rmclear"){ await saveRemark(t.dataset.k,""); closeModal(); }
