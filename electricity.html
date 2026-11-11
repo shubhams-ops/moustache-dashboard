@@ -352,12 +352,6 @@
     </button>
   </div>
 
-  <!-- 13. GM SUMMARY -->
-  <div class="gm">
-    <div class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Summary for the GM</div>
-    <ul id="gmList"></ul>
-  </div>
-
   <!-- 1. KPI CARDS -->
   <div class="stats">
     <div class="stat big">
@@ -398,31 +392,6 @@
     </div>
   </div>
 
-  <!-- 2 + 3. TRENDS -->
-  <div class="sec-head"><h2>Trends</h2><span class="hint">Hover any month for details</span></div>
-  <div class="grid2">
-    <div class="panel pad">
-      <p class="ptitle">Monthly bill vs room nights</p>
-      <p class="psub">Top: bill (₹) · Bottom: room nights sold</p>
-      <div class="legend">
-        <span><i style="background:var(--indigo2)"></i>Bill</span>
-        <span><i style="background:var(--red)"></i>Investigate</span>
-        <span><i class="ln" style="background:var(--ink)"></i>Expected for occupancy</span>
-        <span><i style="background:var(--indigo-lt)"></i>Room nights</span>
-      </div>
-      <div id="ch-trend"></div>
-    </div>
-    <div class="panel pad">
-      <p class="ptitle">Cost per room night (₹)</p>
-      <p class="psub">Bill ÷ room nights — the main efficiency number</p>
-      <div class="legend">
-        <span><i class="ln" style="background:var(--indigo2)"></i>Cost per room night</span>
-        <span><i class="dash"></i>Average</span>
-      </div>
-      <div id="ch-cpr"></div>
-    </div>
-  </div>
-
   <!-- 8 + 4. ANOMALIES + MONTH TABLE -->
   <div class="sec-head"><h2>Month-by-month check</h2><span class="pill" id="flagPill">—</span><span class="hint">Expected = fixed base + rate × room nights</span></div>
   <div id="alertWrap"></div>
@@ -436,83 +405,17 @@
     </table>
   </div>
 
-  <!-- 9. FIXED vs VARIABLE -->
-  <div class="sec-head"><h2>What each bill is made of</h2><span class="hint">Fixed base vs occupancy-driven vs unexplained</span></div>
-  <div class="panel split">
-    <div class="side-k" id="fvKeys"></div>
-    <div class="pad">
-      <div class="legend">
-        <span><i style="background:var(--indigo)"></i>Fixed base</span>
-        <span><i style="background:var(--indigo-lt)"></i>Driven by room nights</span>
-        <span><i style="background:var(--amber)"></i>Unexplained extra</span>
-        <span><i style="background:#fff;border:1.5px dashed var(--muted)"></i>Below expected</span>
-      </div>
-      <div id="ch-fv"></div>
-    </div>
-  </div>
-
-  <!-- 5 + 6. BUDGET -->
-  <div class="sec-head"><h2>Budget &amp; forecast</h2><span class="pill" id="budPill">—</span><span class="hint">Locked budget · actuals fill in as bills arrive</span></div>
-  <div class="panel">
-    <div class="pad">
-      <div class="legend">
-        <span><i style="background:var(--indigo-lt)"></i>Likely budget</span>
-        <span><i class="ln" style="background:var(--ink)"></i>Best – worst range</span>
-        <span><i style="background:var(--ink);border-radius:50%"></i>Actual bill</span>
-      </div>
-      <div id="ch-bud"></div>
-    </div>
-    <table>
-      <thead><tr>
-        <th class="l">Month</th><th>Room nights</th><th class="opt">Best case</th><th>Likely budget</th><th class="opt">Worst case</th><th>Actual</th><th>Variance</th><th class="l">Status</th>
-      </tr></thead>
-      <tbody id="bBody"></tbody>
-      <tfoot id="bFoot"></tfoot>
-    </table>
-    <div class="prog" id="bProg"></div>
-  </div>
-
-  <!-- 7. WHAT-IF -->
-  <div class="sec-head"><h2>What-if planner</h2><span class="hint">Move the sliders — budget updates live</span></div>
-  <div class="panel whatif">
-    <div class="sliders">
-      <div class="sl"><div class="top"><span>Room nights per month</span><b id="w-rn-v">—</b></div><input type="range" id="w-rn"><div class="cap" id="w-rn-c">—</div></div>
-      <div class="sl"><div class="top"><span>Tariff change</span><b id="w-tar-v">—</b></div><input type="range" id="w-tar" min="-10" max="25" step="1" value="0"><div class="cap">If the electricity board revises the per-unit rate</div></div>
-      <div class="sl"><div class="top"><span>Cut in fixed base load</span><b id="w-cut-v">—</b></div><input type="range" id="w-cut" min="0" max="40" step="1" value="0"><div class="cap">Common areas, pumps, lighting, chillers — what runs with no guests</div></div>
-      <button class="linkbtn" id="w-reset" style="justify-self:start">Reset sliders</button>
-    </div>
-    <div class="wout">
-      <div class="wcard hero"><div class="k">6-month budget under this scenario</div><div class="v" id="w-6m">—</div><div class="s" id="w-6m-s">—</div></div>
-      <div class="wcard"><div class="k">Monthly bill</div><div class="v" id="w-m">—</div></div>
-      <div class="wcard"><div class="k">Cost per room night</div><div class="v" id="w-cpr">—</div></div>
-      <div class="wcard"><div class="k">Yearly saving from fixed-load cut</div><div class="v" id="w-save">—</div></div>
-      <div class="wcard"><div class="k">Compared with locked budget</div><div class="v" id="w-vs">—</div></div>
-    </div>
-  </div>
-
-  <!-- 11. REVENUE % -->
-  <div class="sec-head"><h2>Electricity as % of room revenue</h2><span class="hint">Room revenue = room nights × ADR</span></div>
-  <div class="panel">
-    <div class="adrbox">
-      <label for="adr">Average room rate (ADR) ₹</label>
-      <input id="adr" inputmode="numeric" placeholder="e.g. 6500">
-      <span class="muted" style="font-size:12.5px;font-weight:600">Enter once per property — saved with the data.</span>
-    </div>
-    <div id="revWrap"></div>
-  </div>
-
   <!-- 14. PROPERTY RANKING -->
   <div class="sec-head"><h2>Property comparison</h2><span class="pill" id="rkPill">—</span><span class="hint">Ranked by cost per room night (lowest first)</span></div>
   <div class="panel">
     <table>
-      <thead><tr><th class="l">#</th><th class="l">Property</th><th>Bills</th><th>Avg monthly bill</th><th>Cost / room night</th><th class="opt">Fixed base</th><th class="opt">Months flagged</th><th>6-month budget</th></tr></thead>
+      <thead><tr><th class="l">#</th><th class="l">Property</th><th>Bills</th><th>Avg monthly bill</th><th>Cost / room night</th><th class="opt">Fixed base</th><th class="opt">Months flagged</th></tr></thead>
       <tbody id="rkBody"></tbody>
     </table>
   </div>
 
   <div class="foot">
-    <b>How the numbers work:</b> the dashboard learns a <b>fixed base</b> and a <b>₹ per room night rate</b> from normal months (months more than 25% away from normal are left out of the learning and flagged).
-    Best case uses your most efficient normal month; worst case uses the average including unusual bills. Data is saved in this browser until we connect it to Firebase.
+    <b>How the numbers work:</b> each month's <b>expected bill</b> = a fixed base + a ₹ rate per room night, learned from normal months. Months more than 25% away from expected are flagged and left out of the learning.
   </div>
 </div></div>
 </div>
@@ -586,7 +489,8 @@ loadDB();
 let current = Object.keys(DB)[0];
 
 /* ---------- helpers ---------- */
-const $=id=>document.getElementById(id);
+const STUB=()=>({textContent:"",innerHTML:"",value:"",style:{setProperty(){}},dataset:{},classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelectorAll:()=>[]});
+const $=id=>document.getElementById(id)||STUB();
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const ml=m=>{const [y,mm]=m.split("-");return MON[+mm-1]+" "+y.slice(2);};
 const addM=(m,k)=>{let [y,mm]=m.split("-").map(Number);mm+=k;while(mm>12){mm-=12;y++;}while(mm<1){mm+=12;y--;}return y+"-"+String(mm).padStart(2,"0");};
@@ -820,7 +724,7 @@ function render(){
   }
   if(M.split) gm.push(`About <b>${lakh(M.fixed)} of every bill (${pct(M.fixed/A.cleanAvgBill)})</b> is fixed load that runs even with no guests — that is <b>${lakh(M.fixed*12)} a year</b>. A 10% cut saves about ${lakh(M.fixed*12*.1)} a year.`);
   const bl=sum(A.budget.map(b=>b.likely)), bb=sum(A.budget.map(b=>b.best)), bw_=sum(A.budget.map(b=>b.worst));
-  gm.push(`Budget ${ml(A.budget[0].m)} – ${ml(A.budget[A.budget.length-1].m)}: <b>${lakh(bl)}</b> likely (range ${lakh(bb)} – ${lakh(bw_)}). ${ml(A.budget[0].m)} bill should be about <b>${inr(A.budget[0].likely)}</b>.`);
+  if(false) gm.push(`Budget ${ml(A.budget[0].m)} – ${ml(A.budget[A.budget.length-1].m)}: <b>${lakh(bl)}</b> likely (range ${lakh(bb)} – ${lakh(bw_)}). ${ml(A.budget[0].m)} bill should be about <b>${inr(A.budget[0].likely)}</b>.`);
   $("gmList").innerHTML=gm.map((g,i)=>`<li class="${A.flagged.length&&i===2?"alert":""}">${g}</li>`).join("");
 
   // charts
@@ -911,7 +815,7 @@ function renderRank(){
     <td class="l"><b>${i+1}</b></td><td class="l"><b>${esc(a.name)}</b></td><td>${a.months.length}</td><td>${lakh(a.total/a.months.length)}</td>
     <td><b>${inr(a.cpr)}</b></td><td class="opt">${a.model.split?lakh(a.model.fixed):"—"}</td>
     <td class="opt">${a.flagged.length?`<span class="st bad">${a.flagged.length}</span>`:`<span class="st ok">0</span>`}</td>
-    <td>${lakh(sum(a.budget.map(b=>b.likely)))}</td></tr>`).join("")+(all.length<2?`<tr><td colspan="8" class="l muted" style="font-size:12.5px">Add more properties with “Add / edit bills” → New property, and they will be ranked here.</td></tr>`:"");
+    </tr>`).join("")+(all.length<2?`<tr><td colspan="7" class="l muted" style="font-size:12.5px">Add more properties with “Add / edit bills” → New property, and they will be ranked here.</td></tr>`:"");
 }
 
 $("propSel").onchange=e=>{current=e.target.value;render();};
