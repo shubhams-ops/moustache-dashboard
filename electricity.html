@@ -471,6 +471,31 @@ const SEED = {
       { m:"2026-09", rn:585, bill:167441 },
       { m:"2026-10", rn:564, bill:null   }
     ]
+  },
+  "Rishikesh Select Mohanchatti": {
+    budgetStart: "2026-10",
+    adr: null,
+    months: [
+      { m:"2026-05", rn:47,  bill:140354 },
+      { m:"2026-06", rn:382, bill:148580 },
+      { m:"2026-07", rn:214, bill:112372 },
+      { m:"2026-08", rn:214, bill:101925 },
+      { m:"2026-09", rn:380, bill:null   },
+      { m:"2026-10", rn:463, bill:null   }
+    ]
+  },
+  "Nainital Select": {
+    budgetStart: "2026-10",
+    adr: null,
+    months: [
+      { m:"2026-04", rn:456, bill:87021 },
+      { m:"2026-05", rn:475, bill:82553 },
+      { m:"2026-06", rn:540, bill:79607 },
+      { m:"2026-07", rn:248, bill:59993 },
+      { m:"2026-08", rn:279, bill:73964 },
+      { m:"2026-09", rn:360, bill:59887 },
+      { m:"2026-10", rn:465, bill:null  }
+    ]
   }
 };
 const STORE_KEY = "moustache_electricity_v1";
@@ -481,7 +506,9 @@ const BUDGET_MONTHS = 6;
 /* ---------- storage (safe) ---------- */
 let DB;
 function loadDB(){
-  try{ const s=localStorage.getItem(STORE_KEY); if(s){ DB=JSON.parse(s); return; } }catch(e){}
+  try{ const s=localStorage.getItem(STORE_KEY); if(s){ DB=JSON.parse(s);
+    for(const k in SEED){ if(!DB[k]) DB[k]=JSON.parse(JSON.stringify(SEED[k])); }
+    return; } }catch(e){}
   DB=JSON.parse(JSON.stringify(SEED));
 }
 function saveDB(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }catch(e){} }
