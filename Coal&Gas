@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coal &amp; Gas · Personal Management System</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☘️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#0E8A6B;--g2:#10A27E;--glt:#86D4B8;--ink:#10201B;--ink2:#3C4B46;--muted:#7A8B85;--line:#E2E9E5;
+  --bg:#F2F5F3;--card:#FFFFFF;--side:#0A1E18;--side2:#123A2F;--sidemut:#7FA393;
+  --gas:#2F6FE4;--gaslt:#DCE7FB;--coal:#E0662A;--coallt:#FBE3D6;
+  --warn:#B7791F;--warnbg:#FFF4DE;--bad:#C2410C;--good:#0E8A6B;
+  --sans:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;--disp:"Plus Jakarta Sans",var(--sans);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+button,select,input{font-family:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ============ INTRO ============ */
+#intro{position:fixed;inset:0;z-index:100;background:#050807;overflow:hidden;transition:opacity .9s ease}
+#intro.out{opacity:0;pointer-events:none}
+#fx{position:absolute;inset:0;width:100%;height:100%}
+#ldbg{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;background:radial-gradient(ellipse 70% 60% at 50% 40%,#1A4637 0%,#11291F 48%,#0A1813 100%)}
+#intro.loader #ldbg{opacity:.97}
+#logoWrap{position:absolute;left:0;top:0;width:130px;height:130px;will-change:transform,opacity;opacity:0}
+#logoWrap svg{display:block;width:100%;height:100%;overflow:visible}
+#logoWrap .lglow{position:absolute;inset:-70%;border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,.35),rgba(60,140,255,.12) 40%,rgba(0,0,0,0) 66%);transition:background 1s}
+#intro.loader #logoWrap .lglow{background:radial-gradient(circle,rgba(46,204,113,.30),rgba(46,204,113,0) 62%)}
+#ldtext{position:absolute;left:50%;transform:translate(-50%,8px);text-align:center;opacity:0;transition:opacity .7s ease,transform .7s ease;white-space:nowrap}
+#intro.loader2 #ldtext{opacity:1;transform:translate(-50%,0)}
+#ldtext .t1{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:-.01em;color:#fff}
+#ldtext .bar{width:180px;height:3px;border-radius:3px;background:rgba(255,255,255,.12);margin:22px auto 0;overflow:hidden}
+#ldtext .bar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#2F6FE4,#1E9E6A 50%,#E0662A);transition:width 1.8s cubic-bezier(.4,0,.2,1)}
+#intro.loader2 #ldtext .bar i{width:100%}
+#ldtext .t2{margin-top:20px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:#7FA393}
+#cap{position:absolute;left:50%;top:9%;transform:translateX(-50%);text-align:center;color:rgba(255,255,255,.0);font-family:var(--disp);font-weight:800;letter-spacing:.32em;font-size:12px;text-transform:uppercase;transition:color 1s}
+#intro.cap #cap{color:rgba(255,230,200,.55)}
+#intro.loader #cap{color:rgba(255,255,255,0)}
+.skip{position:absolute;right:22px;bottom:20px;color:rgba(255,255,255,.75);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.2);z-index:3;cursor:pointer}
+.skip:hover{color:#fff;background:rgba(0,0,0,.4)}
+
+/* ============ SHELL ============ */
+.shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,var(--side2),var(--side) 60%);color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:11px;align-items:center;padding:4px 6px 20px}
+.brand .logo{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center}
+.brand .logo svg{width:32px;height:32px}
+.bt{font-family:var(--disp);font-weight:800;font-size:14px;line-height:1.2}
+.bs{font-size:11px;color:var(--sidemut);font-weight:600;margin-top:2px}
+.navlbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sidemut);font-weight:700;padding:10px 10px 6px}
+.navbtn{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:11px;color:#CFE3DA;text-decoration:none;font-weight:600;font-size:13.5px}
+.navbtn svg{width:18px;height:18px;flex:none}
+.navbtn:hover{background:rgba(255,255,255,.06);color:#fff}
+.navbtn.on{background:linear-gradient(90deg,rgba(16,162,126,.35),rgba(16,162,126,.12));color:#fff;box-shadow:inset 3px 0 0 #2FD48A}
+.sfoot{margin-top:auto;font-size:11px;color:var(--sidemut);line-height:1.5;padding:0 8px}
+main{padding:26px 30px 60px;min-width:0}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--g)}
+h1{font-family:var(--disp);font-size:30px;letter-spacing:-.02em;margin:6px 0 4px;font-weight:800}
+.sub{color:var(--muted);font-size:13px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sel{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A8B85' fill='none' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--line);border-radius:11px;padding:9px 32px 9px 12px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;max-width:260px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-size:12.5px;font-weight:700;color:var(--ink2);cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+.btn:hover{border-color:var(--glt);color:var(--g)}
+.btn svg{width:15px;height:15px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 11px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:#9AA8A3}
+.chip.live .dot{background:#18B26B;box-shadow:0 0 0 0 rgba(24,178,107,.5);animation:pulse 1.8s infinite}
+.chip.snap .dot{background:#D9A23A}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(24,178,107,.5)}70%{box-shadow:0 0 0 8px rgba(24,178,107,0)}100%{box-shadow:0 0 0 0 rgba(24,178,107,0)}}
+.banner{display:none;background:var(--warnbg);border:1px solid #F1D9A6;color:#6B4A12;border-radius:14px;padding:12px 16px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.banner.on{display:block}
+.banner b{color:#4A3208}
+
+/* hero cards */
+.hero{display:grid;grid-template-columns:1.15fr 1.15fr 1fr;gap:16px;margin-bottom:16px}
+.hc{position:relative;border-radius:22px;padding:22px 22px 18px;color:#fff;overflow:hidden;min-height:228px}
+.hc.gas{background:radial-gradient(120% 90% at 85% 100%,#1C3F8F 0%,#0D1C45 55%,#08112A 100%)}
+.hc.coal{background:radial-gradient(120% 90% at 85% 100%,#5A2210 0%,#2A140C 55%,#140B08 100%)}
+.hc .lbl{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;opacity:.75;display:flex;align-items:center;gap:8px}
+.hc .big{font-family:var(--disp);font-weight:800;font-size:46px;letter-spacing:-.03em;line-height:1;margin:12px 0 2px}
+.hc .big small{font-size:16px;font-weight:700;opacity:.7;letter-spacing:0;margin-left:6px}
+.hc .row{display:flex;gap:22px;max-width:66%;margin-top:14px;position:relative;z-index:2}
+.hc .row div b{display:block;font-family:var(--disp);font-size:19px;font-weight:800}
+.hc .row div span{font-size:11.5px;opacity:.65;font-weight:600}
+.hc .art{position:absolute;right:10px;bottom:0;height:64%;max-width:34%;pointer-events:none;z-index:1}
+.hc .spark{position:relative;z-index:2;margin-top:14px;max-width:58%}
+.hc .spark .sl{font-size:10.5px;opacity:.6;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.hc .spark svg{display:block;width:100%;height:38px;overflow:visible}
+.stack{display:grid;grid-template-rows:1fr 1fr;gap:16px}
+.tile{background:var(--card);border-radius:20px;padding:18px 20px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+.tile .lbl{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.tile .v{font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.02em;margin-top:6px}
+.tile .s{font-size:12.5px;color:var(--muted);margin-top:4px;font-weight:500}
+.mixbar{display:flex;height:8px;border-radius:6px;overflow:hidden;margin-top:12px;gap:2px;background:#fff}
+.mixbar i{display:block;height:100%}
+
+/* flame anim in hero art */
+@keyframes flick{0%,100%{transform:scaleY(1) translateX(0)}25%{transform:scaleY(1.08) translateX(.6px)}50%{transform:scaleY(.94) translateX(-.5px)}75%{transform:scaleY(1.05) translateX(.3px)}}
+.fl{transform-origin:50% 100%;transform-box:fill-box;animation:flick 1.1s ease-in-out infinite}
+.fl:nth-child(2n){animation-duration:.9s;animation-delay:-.3s}
+.fl:nth-child(3n){animation-duration:1.3s;animation-delay:-.6s}
+@keyframes glow{0%,100%{opacity:.55}50%{opacity:1}}
+.emb{animation:glow 2.2s ease-in-out infinite}
+.emb:nth-child(2n){animation-duration:1.6s;animation-delay:-.7s}
+.emb:nth-child(3n){animation-duration:2.8s;animation-delay:-1.2s}
+@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-120px);opacity:0}}
+.spk{animation:rise 2.6s linear infinite}
+
+/* insights */
+.ins{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.in{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 15px;font-size:12.8px;line-height:1.45;color:var(--ink2)}
+.in .k{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:5px}
+.in b{color:var(--ink)}
+.in.warn{background:var(--warnbg);border-color:#F1D9A6}
+.in.warn .k{color:var(--warn)}
+
+/* cards & charts */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px 14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+.ct{font-family:var(--disp);font-weight:800;font-size:15.5px}
+.cs{font-size:12px;color:var(--muted);margin-top:2px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--sans)}
+.ax{fill:var(--muted);font-size:11px}
+.gl{stroke:#EDF1EF;stroke-width:1}
+.hit{fill:transparent;cursor:pointer}
+.bar-dim{opacity:.35}
+#tip{position:fixed;z-index:60;pointer-events:none;background:#0F1F1A;color:#fff;border-radius:11px;padding:9px 11px;font-size:12px;line-height:1.5;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .12s;min-width:150px}
+#tip.on{opacity:1}
+#tip .tt{font-weight:800;margin-bottom:3px}
+#tip .tr{display:flex;justify-content:space-between;gap:16px}
+#tip .tr i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+#tip .mut{color:#9FB3AB}
+
+/* table */
+.tbl-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1000px;font-size:12.8px}
+th{position:sticky;top:0;background:#F7FAF8;text-align:right;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:800;padding:11px 10px;border-bottom:1px solid var(--line);white-space:normal;line-height:1.25;vertical-align:bottom}
+th:first-child,td:first-child{text-align:left}
+th.gasH{color:var(--gas)}th.coalH{color:var(--coal)}th.userH{color:var(--g);background:#EEF8F3}
+td{padding:8px 10px;text-align:right;border-bottom:1px solid #F0F3F1;white-space:nowrap}
+tbody tr:hover td{background:#FAFCFB}
+tr.sel td{background:#F1FAF6}
+td.user{background:#F7FCFA}
+td input{width:104px;text-align:right;border:1px dashed #BFD8CD;background:#fff;border-radius:8px;padding:6px 8px;font-size:13px;font-weight:600;color:var(--ink)}
+td input:focus{outline:none;border:1px solid var(--g);box-shadow:0 0 0 3px rgba(14,138,107,.12)}
+td input::placeholder{color:#B5C3BE;font-weight:500}
+tfoot td{background:linear-gradient(90deg,var(--g),var(--g2));color:#fff;font-weight:800;border:0}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.pill.over{background:#FDE8DD;color:var(--bad)}
+.pill.under{background:#DDF3EA;color:var(--good)}
+.pill.chk{background:var(--warnbg);color:var(--warn);margin-left:6px}
+.mutd{color:#B5C3BE}
+.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+
+/* property list */
+.plist{display:flex;flex-direction:column;gap:2px}
+.prow{display:grid;grid-template-columns:170px 1fr 92px;gap:12px;align-items:center;padding:6px 6px;border-radius:10px;cursor:pointer}
+.prow:hover{background:#F6FAF8}
+.prow.on{background:#EEF8F3}
+.prow .pn{font-size:12.8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .pb{display:flex;height:14px;gap:2px}
+.prow .pb i{display:block;height:100%}
+.prow .pb i:first-child{border-radius:4px 0 0 4px}
+.prow .pb i:last-child{border-radius:0 4px 4px 0}
+.prow .pb i:only-child{border-radius:4px}
+.prow .pv{text-align:right;font-weight:700;font-size:12.8px}
+
+@media (max-width:1200px){.hero{grid-template-columns:1fr 1fr}.stack{grid-column:1/-1;grid-template-columns:1fr 1fr;grid-template-rows:none}.ins{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){.shell{grid-template-columns:1fr}.side{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center}.brand{padding:0 10px 0 0}.navlbl,.sfoot{display:none}main{padding:18px}.grid2,.hero{grid-template-columns:1fr}.prow{grid-template-columns:120px 1fr 80px}}
+@media (prefers-reduced-motion:reduce){.fl,.emb,.spk,.chip.live .dot{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= INTRO ================= -->
+<div id="intro" aria-hidden="true">
+  <canvas id="fx"></canvas>
+  <div id="cap">Fire · Fuel · Flame</div>
+  <div id="ldbg"></div>
+  <div id="logoWrap"><div class="lglow"></div><svg viewBox="0 0 140 140" aria-hidden="true"><defs><radialGradient id="shG" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#4FD37A"/><stop offset=".6" stop-color="#22A04F"/><stop offset="1" stop-color="#157A3A"/></radialGradient></defs><path d="M70 70 C 72 92, 80 112, 96 128" fill="none" stroke="#0B1A12" stroke-width="9" stroke-linecap="round"/><path d="M70 70 C 72 92, 80 112, 96 128" fill="none" stroke="#22A04F" stroke-width="4" stroke-linecap="round"/><g transform="rotate(0 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><g transform="rotate(118 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><g transform="rotate(-118 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><circle cx="70" cy="66" r="4" fill="#157A3A" stroke="#0B1A12" stroke-width="2"/></svg></div>
+  <div id="ldtext"><div class="t1">Personal Management System</div><div class="bar"><i></i></div><div class="t2">Loading Coal &amp; Gas</div></div>
+  <button class="skip" id="skip">Skip intro ›</button>
+</div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><div class="logo"><svg viewBox="0 0 140 140" aria-hidden="true"><defs><radialGradient id="shG2" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#4FD37A"/><stop offset=".6" stop-color="#22A04F"/><stop offset="1" stop-color="#157A3A"/></radialGradient></defs><path d="M70 70 C 72 92, 80 112, 96 128" fill="none" stroke="#0B1A12" stroke-width="9" stroke-linecap="round"/><path d="M70 70 C 72 92, 80 112, 96 128" fill="none" stroke="#22A04F" stroke-width="4" stroke-linecap="round"/><g transform="rotate(0 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG2)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><g transform="rotate(118 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG2)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><g transform="rotate(-118 70 66)"><path d="M70 66 C 54 56, 36 40, 46 24 C 54 12, 68 18, 70 30 C 72 18, 86 12, 94 24 C 104 40, 86 56, 70 66 Z" fill="url(#shG2)" stroke="#0B1A12" stroke-width="3.5" stroke-linejoin="round"/><path d="M70 62 L70 34" stroke="#B8F0CF" stroke-width="2.4" stroke-linecap="round" opacity=".9"/></g><circle cx="70" cy="66" r="4" fill="#157A3A" stroke="#0B1A12" stroke-width="2"/></svg></div><div><div class="bt">Personal Management System</div><div class="bs">Moustache F&amp;B</div></div></div>
+    <div class="navlbl">Dashboards</div>
+    <a class="navbtn" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>NC &amp; Discount</a>
+    <a class="navbtn" href="deals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8M12 15v7M5 3h14l-7 12z"/></svg>Bar Deals</a>
+    <a class="navbtn" href="electricity.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Electricity</a>
+    <a class="navbtn on" href="coal-gas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c4 0 7-2.7 7-6.7 0-3.6-2.6-6-4.3-8.3-.4 2.1-1.6 3.5-3 4.2.3-3.2-1.2-6.6-3.9-9.2C8.1 5.6 5 9.4 5 15.3 5 19.3 8 22 12 22z"/></svg>Coal &amp; Gas</a>
+    <div class="sfoot">Live from the Coal &amp; Gas Google Sheet · refreshes every 5 min</div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <div>
+        <div class="eyebrow">☘️ Personal Management System · Coal &amp; Gas</div>
+        <h1 id="title">Coal &amp; Gas</h1>
+        <div class="sub" id="subt">FY 2026–27 · gas cylinders, coal + wood, and what they cost</div>
+      </div>
+      <div class="controls">
+        <span class="chip" id="chip"><span class="dot"></span><span id="chipT">Connecting…</span></span>
+        <select class="sel" id="propSel" aria-label="Property"></select>
+        <select class="sel" id="perSel" aria-label="Period"></select>
+        <button class="btn" id="refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.6-6.4M21 3v6h-6"/></svg>Refresh</button>
+        <button class="btn" id="replay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9z"/></svg>Replay intro</button>
+      </div>
+    </div>
+
+    <div class="banner" id="banner"></div>
+
+    <section class="hero">
+      <div class="hc gas">
+        <div class="lbl">🔵 Gas cylinders</div>
+        <div class="big num" id="kCyl">–</div>
+        <div class="row">
+          <div><b class="num" id="kGasAmt">–</b><span>Gas spend (pre-tax)</span></div>
+          <div><b class="num" id="kPerCyl">–</b><span>Avg per cylinder</span></div>
+        </div>
+        <div class="spark"><div class="sl">₹ per cylinder, by month</div><svg id="spGas"></svg></div>
+        <svg class="art" viewBox="0 0 160 230" aria-hidden="true">
+          <defs>
+            <linearGradient id="cylG" x1="0" x2="1"><stop offset="0" stop-color="#6E1410"/><stop offset=".35" stop-color="#D23A2E"/><stop offset=".55" stop-color="#FF7363"/><stop offset=".8" stop-color="#B42519"/><stop offset="1" stop-color="#5E100C"/></linearGradient>
+            <linearGradient id="flG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9FD8FF"/><stop offset=".45" stop-color="#3B82F6"/><stop offset="1" stop-color="#1E40FF" stop-opacity="0"/></linearGradient>
+            <linearGradient id="flI" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9FE3FF" stop-opacity="0"/></linearGradient>
+            <radialGradient id="blueGlow"><stop offset="0" stop-color="#3B82F6" stop-opacity=".55"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/></radialGradient>
+          </defs>
+          <ellipse cx="62" cy="226" rx="44" ry="5" fill="#000" opacity=".35"/>
+          <rect x="22" y="78" width="80" height="146" rx="26" fill="url(#cylG)"/>
+          <rect x="22" y="132" width="80" height="20" fill="#fff" opacity=".9"/>
+          <text x="62" y="147" text-anchor="middle" font-size="13" font-weight="800" fill="#B42519" font-family="Inter">LPG</text>
+          <path d="M38 80 Q38 58 62 56 Q86 58 86 80" fill="#9a2018"/>
+          <rect x="40" y="40" width="44" height="22" rx="5" fill="none" stroke="#6b6f76" stroke-width="5"/>
+          <rect x="56" y="34" width="12" height="16" rx="2" fill="#C9A43A"/>
+          <rect x="26" y="214" width="72" height="10" rx="3" fill="#3a0d09"/>
+          <path d="M68 42 C 110 30, 112 120, 132 150" fill="none" stroke="#151821" stroke-width="4" stroke-linecap="round"/>
+          <ellipse cx="136" cy="160" rx="34" ry="34" fill="url(#blueGlow)"/>
+          <ellipse cx="136" cy="160" rx="18" ry="5" fill="#2b2f38"/>
+          <g>
+            <path class="fl" d="M122 158 Q124 136 128 130 Q130 142 132 158Z" fill="url(#flG)"/>
+            <path class="fl" d="M129 158 Q132 128 136 120 Q139 134 141 158Z" fill="url(#flG)"/>
+            <path class="fl" d="M139 158 Q142 136 146 130 Q148 144 150 158Z" fill="url(#flG)"/>
+            <path class="fl" d="M132 158 Q134 144 136 138 Q138 146 139 158Z" fill="url(#flI)"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="hc coal">
+        <div class="lbl">🟠 Coal + wood</div>
+        <div class="big num" id="kKg">–</div>
+        <div class="row">
+          <div><b class="num" id="kCoalAmt">–</b><span>Coal + wood spend</span></div>
+          <div><b class="num" id="kPerKg">–</b><span>Avg per kg</span></div>
+        </div>
+        <div class="spark"><div class="sl">₹ per kg, by month</div><svg id="spCoal"></svg></div>
+        <svg class="art" viewBox="0 0 170 230" aria-hidden="true">
+          <defs>
+            <radialGradient id="emberG" cx=".5" cy=".7"><stop offset="0" stop-color="#FFB25B"/><stop offset=".5" stop-color="#E0662A"/><stop offset="1" stop-color="#7a210a" stop-opacity="0"/></radialGradient>
+            <radialGradient id="heatG"><stop offset="0" stop-color="#FF7A2E" stop-opacity=".6"/><stop offset="1" stop-color="#FF7A2E" stop-opacity="0"/></radialGradient>
+            <linearGradient id="rockG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3431"/><stop offset="1" stop-color="#121010"/></linearGradient>
+            <linearGradient id="woodG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a2a"/><stop offset="1" stop-color="#3b2211"/></linearGradient>
+          </defs>
+          <ellipse cx="88" cy="190" rx="80" ry="50" fill="url(#heatG)"/>
+          <rect x="18" y="196" width="140" height="13" rx="6.5" fill="url(#woodG)" transform="rotate(-6 88 202)"/>
+          <rect x="24" y="204" width="132" height="12" rx="6" fill="url(#woodG)" transform="rotate(7 88 210)"/>
+          <circle cx="152" cy="196" r="6" fill="#c08a5a"/><circle cx="152" cy="196" r="3" fill="none" stroke="#7a4a2a"/>
+          <g id="heapArt"></g>
+          <g id="sparkArt"></g>
+        </svg>
+      </div>
+
+      <div class="stack">
+        <div class="tile">
+          <div class="lbl">Total fuel spend</div>
+          <div class="v num" id="kTot">–</div>
+          <div class="s" id="kTotS">–</div>
+          <div class="mixbar" id="mix"></div>
+        </div>
+        <div class="tile">
+          <div class="lbl">Fuel as % of restaurant sale</div>
+          <div class="v num" id="kPct">–</div>
+          <div class="s" id="kPctS">Add restaurant sale in the table below</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ins" id="ins"></section>
+
+    <section class="grid2">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Monthly fuel spend</div><div class="cs">Gas vs coal + wood, pre-tax</div></div>
+          <div class="legend"><span><i style="background:var(--gas)"></i>Gas</span><span><i style="background:var(--coal)"></i>Coal + wood</span></div></div>
+        <div class="chart" id="chSpend"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div><div class="ct">Gas cylinders per month</div><div class="cs">Each bar is a cylinder · dashed line = monthly average</div></div></div>
+        <div class="chart" id="chCyl"></div>
+      </div>
+    </section>
+
+    <section class="grid2">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Coal + wood per month</div><div class="cs">Kilograms bought</div></div></div>
+        <div class="chart" id="chKg"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div><div class="ct">By property</div><div class="cs" id="plSub">Fuel spend for the selected period · click a property to open it</div></div>
+          <div class="legend"><span><i style="background:var(--gas)"></i>Gas</span><span><i style="background:var(--coal)"></i>Coal + wood</span></div></div>
+        <div class="plist" id="plist"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><div><div class="ct">Month by month</div><div class="cs" id="tblSub">Fill in the two green columns; everything else comes from the sheet</div></div>
+        <button class="btn" id="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Download CSV</button></div>
+      <div class="tbl-wrap"><table id="tbl"></table></div>
+      <div class="note">Restaurant sale and estimated expense are saved in this browser. Fuel % = (gas + coal + wood spend) ÷ restaurant sale. Variance = actual fuel spend − estimated expense.</div>
+    </section>
+  </main>
+</div>
+<div id="tip"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const SHEET_ID="11nkyL75ZQO06SaXBHQgXcwW_EhwxzhjNcUKpBub-SUk";
+const SHEET_TAB="Coal & Gas";
+const REFRESH_MS=5*60*1000;
+const FY_START_YEAR=2026;
+const SNAPSHOT={"ALL PROPERTIES":{"gc":[54,91,116,131,125,160,270,107,0,0,0,0],"ga":[129583.63,278524.24,352459.92,342257.39,308291.26,395664.52,400884.5,39224.5,0,0,0,0],"ck":[8284,5510,4465,3254,3531,2606,4573,500,0,0,0,0],"ca":[191165,228900,185970,148511,144250,110100,167754,19800,0,0,0,0]},"Jaipur Hostel":{"gc":[5,8,10,15,13,16,0,0,0,0,0,0],"ga":[9016.95,21010.16,26618.6,37595.4,30467.32,37640.64,0,0,0,0,0,0],"ck":[450,350,250,200,300,300,400,0,0,0,0,0],"ca":[13500,10500,7700,6400,9600,9600,12800,0,0,0,0,0]},"Moustache Goa Luxuria":{"gc":[6,17,21,20,20,24,17,0,0,0,0,0],"ga":[10932.18,45381.5,56852.54,51016.91,47711.8,57431.83,41635.58,0,0,0,0,0],"ck":[1861,25,0,300,0,0,0,0,0,0,0,0],"ca":[29540,13750,0,11001,0,0,0,0,0,0,0,0]},"Moustache Gokarna Luxuria":{"gc":[0,0,0,0,0,1,115,96,0,0,0,0],"ga":[0,0,0,0,0,2372.88,14644.23,12266.91,0,0,0,0],"ck":[0,0,0,0,0,0,0,0,0,0,0,0],"ca":[0,0,0,0,0,0,0,0,0,0,0,0]},"Moustache Jim Corbett":{"gc":[0,0,0,0,0,0,8,0,0,0,0,0],"ga":[0,0,0,0,0,0,19084.72,0,0,0,0,0],"ck":[0,0,0,0,0,0,0,0,0,0,0,0],"ca":[0,0,0,0,0,0,0,0,0,0,0,0]},"Moustache Mussoorie":{"gc":[9,4,6,8,9,8,10,0,0,0,0,0],"ga":[16375.5,16924.08,22543.72,20335.52,21413.16,19094.88,24406.8,0,0,0,0,0],"ck":[281,960,1330,300,500,300,500,0,0,0,0,0],"ca":[12950,24850,33870,10500,17500,10500,17500,0,0,0,0,0]},"Moustache Ranakpur Luxuria":{"gc":[0,0,0,0,0,10,20,0,0,0,0,0],"ga":[0,0,0,0,0,28140,48771.2,0,0,0,0,0],"ck":[0,0,0,0,0,0,357,0,0,0,0,0],"ca":[0,0,0,0,0,0,17874,0,0,0,0,0]},"Moustache Ranthambore Luxuria":{"gc":[0,0,0,3,10,4,8,4,0,0,0,0],"ga":[0,4500,5000,7602.96,23716.2,9516.96,19467.84,9766.08,0,0,0,0],"ck":[510,400,120,0,0,0,10,100,0,0,0,0],"ca":[6500,8800,4200,0,0,0,500,3200,0,0,0,0]},"Moustache Rishikesh Luxuria":{"gc":[11,16,14,0,0,0,0,0,0,0,0,0],"ga":[27500,42359.36,37568.72,0,0,0,0,0,0,0,0,0],"ck":[250,201,150,0,0,0,0,0,0,0,0,0],"ca":[16800,16400,6000,0,0,0,0,0,0,0,0,0]},"Moustache Rishikesh Riverside Resort":{"gc":[12,18,15,18,10,19,14,7,0,0,0,0],"ga":[43700,53768.5,40538.1,45846.54,23843.2,45451.3,34270.32,17191.51,0,0,0,0],"ck":[400,1000,300,200,500,200,1300,300,0,0,0,0],"ca":[17200,29200,13500,9000,22500,8600,38300,12600,0,0,0,0]},"Moustache Select Mcleodganj":{"gc":[0,0,0,0,0,7,6,0,0,0,0,0],"ga":[0,12800,16250,0,0,19250,16800,0,0,0,0,0],"ck":[1001,394,418,586,795,436,0,0,0,0,0,0],"ca":[18900,26700,36400,38310,38250,20100,0,0,0,0,0,0]},"Moustache Select Mohanchatti":{"gc":[5,8,12,8,15,13,13,0,0,0,0,0],"ga":[11003,21332.16,32430.48,20376.24,36415.64,31098.75,31822.44,0,0,0,0,0],"ck":[2,200,620,300,0,300,400,0,0,0,0,0],"ca":[75,22500,27900,13500,0,13500,18000,0,0,0,0,0]},"Moustache Select Nainital":{"gc":[0,4,11,15,8,12,10,0,0,0,0,0],"ga":[0,17500,38500,47000,26400,35040,29600,0,0,0,0,0],"ck":[828,584,436,268,436,218,436,0,0,0,0,0],"ca":[43700,29200,21800,21800,21800,10900,21800,0,0,0,0,0]},"Moustache Select Rishikesh":{"gc":[0,0,0,10,3,6,8,0,0,0,0,0],"ga":[0,0,0,25279.6,9461.04,14237.28,19410.26,0,0,0,0,0],"ck":[0,0,40,100,100,200,200,100,0,0,0,0],"ca":[0,0,4000,4000,4000,8000,8000,4000,0,0,0,0]},"Moustache Select Udaipur":{"gc":[0,5,7,7,7,8,9,0,0,0,0,0],"ga":[0,13421.28,21759.36,17953.81,16811.9,19278,22164.39,0,0,0,0,0],"ck":[246,650,200,400,400,400,420,0,0,0,0,0],"ca":[9600,21100,6800,13600,13600,13600,14280,0,0,0,0,0]},"Moustache Udaipur Luxuria":{"gc":[0,2,2,4,4,8,6,0,0,0,0,0],"ga":[0,5368.32,5439.84,10259.32,9606.8,19278,14776.26,0,0,0,0,0],"ck":[200,200,201,200,0,0,0,0,0,0,0,0],"ca":[6400,6400,10200,6800,0,0,0,0,0,0,0,0]},"Moustache Udaipur Verandah":{"gc":[6,9,18,23,26,24,26,0,0,0,0,0],"ga":[11056,24158.88,48958.56,58991.09,62444.2,57834,64030.46,0,0,0,0,0],"ck":[2256,546,400,400,500,252,550,0,0,0,0,0],"ca":[16000,19500,13600,13600,17000,15300,18700,0,0,0,0,0]}};
+const SNAPSHOT_AT="20 Nov 2026";
+
+/* ===================== HELPERS ===================== */
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+(+y||0),0);
+const inr0=new Intl.NumberFormat("en-IN",{maximumFractionDigits:0});
+const R=v=>"₹"+inr0.format(Math.round(v||0));
+const RL=v=>{v=v||0;const a=Math.abs(v);if(a>=1e7)return "₹"+(v/1e7).toFixed(2)+" Cr";if(a>=1e5)return "₹"+(v/1e5).toFixed(a>=1e6?1:2)+" L";if(a>=1e3)return "₹"+(v/1e3).toFixed(1)+"K";return "₹"+Math.round(v)};
+const N=v=>inr0.format(Math.round(v||0));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const short=n=>n.replace(/^Moustache\s+/,"").replace("Select ","Select · ");
+const MONTHS_STD=["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
+
+/* ===================== STATE ===================== */
+const S={data:null,months:MONTHS_STD.slice(),props:[],prop:"ALL PROPERTIES",per:"ytd",source:"",syncedAt:null,last:0};
+try{const p=JSON.parse(localStorage.getItem("cg_view")||"{}");if(p.prop)S.prop=p.prop;if(p.per)S.per=p.per;}catch(e){}
+let USER={};try{USER=JSON.parse(localStorage.getItem("cg_inputs_v1")||"{}")}catch(e){USER={}}
+const saveUser=()=>{try{localStorage.setItem("cg_inputs_v1",JSON.stringify(USER))}catch(e){}};
+const saveView=()=>{try{localStorage.setItem("cg_view",JSON.stringify({prop:S.prop,per:S.per}))}catch(e){}};
+
+/* ===================== DATA: LIVE FROM GOOGLE SHEET ===================== */
+function parseCSV(t){const out=[];let row=[],f="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c=='"')q=true;else if(c==","){row.push(f);f=""}else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;row.push(f);out.push(row);row=[];f=""}else f+=c}
+  if(f!==""||row.length){row.push(f);out.push(row)}return out}
+const toNum=x=>{if(x==null)return 0;if(typeof x=="number")return x;const v=parseFloat(String(x).replace(/[₹,\s]/g,""));return isNaN(v)?0:v};
+function keyOf(m){m=String(m||"").toLowerCase();
+  if(m.includes("cylinder"))return "gc";
+  if(m.includes("gas"))return "ga";
+  if(m.includes("kg"))return "ck";
+  if(m.includes("coal")||m.includes("wood"))return "ca";return null}
+function rowsToData(rows){
+  const head=rows[0].map(String);
+  const mIdx=[],months=[];
+  head.forEach((h,i)=>{const k=h.trim().slice(0,3);const j=MONTHS_STD.findIndex(m=>m.toLowerCase()==k.toLowerCase());if(j>=0&&i>=2){mIdx.push(i);months.push(MONTHS_STD[j])}});
+  if(!months.length)throw new Error("No month columns found");
+  const d={};let cur="";
+  for(const r of rows.slice(1)){
+    if(r[0]&&String(r[0]).trim())cur=String(r[0]).trim();
+    const k=keyOf(r[1]);if(!cur||!k)continue;
+    (d[cur]=d[cur]||{gc:[],ga:[],ck:[],ca:[]})[k]=mIdx.map(i=>toNum(r[i]));
+  }
+  for(const p in d)for(const k of["gc","ga","ck","ca"])if(!d[p][k].length)d[p][k]=months.map(()=>0);
+  if(!Object.keys(d).length)throw new Error("Empty sheet");
+  return {data:d,months};
+}
+async function viaFetch(){
+  const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(SHEET_TAB)}&_=${Date.now()}`;
+  const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
+  const t=await r.text();if(/<html/i.test(t.slice(0,200)))throw new Error("Not shared");
+  return rowsToData(parseCSV(t.trim()));
+}
+function viaJsonp(){return new Promise((res,rej)=>{
+  const cb="__cg"+Date.now();const s=document.createElement("script");
+  const to=setTimeout(()=>{cleanup();rej(new Error("timeout"))},12000);
+  function cleanup(){clearTimeout(to);delete window[cb];s.remove()}
+  window[cb]=resp=>{cleanup();try{
+    if(resp.status!=="ok")throw new Error("gviz "+resp.status);
+    const T=resp.table;const head=T.cols.map(c=>c.label||"");
+    const rows=[head].concat(T.rows.map(r=>r.c.map(c=>c?(c.v!=null?c.v:""):"")));
+    res(rowsToData(rows))}catch(e){rej(e)}};
+  s.onerror=()=>{cleanup();rej(new Error("blocked"))};
+  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1&sheet=${encodeURIComponent(SHEET_TAB)}&_=${Date.now()}`;
+  document.head.appendChild(s)})}
+async function load(manual){
+  setChip("","Syncing…");
+  let got=null,err=null;
+  try{got=await viaFetch()}catch(e){err=e;try{got=await viaJsonp()}catch(e2){err=e2}}
+  if(got){S.data=got.data;S.months=got.months;S.source="live";S.syncedAt=new Date();
+    try{localStorage.setItem("cg_cache",JSON.stringify({d:got.data,m:got.months,t:Date.now()}))}catch(e){}
+    $("banner").classList.remove("on")}
+  else{
+    let cache=null;try{cache=JSON.parse(localStorage.getItem("cg_cache")||"null")}catch(e){}
+    if(cache&&cache.t){S.data=cache.d;S.months=cache.m;S.source="cache";S.syncedAt=new Date(cache.t)}
+    else{S.data=SNAPSHOT;S.months=MONTHS_STD.slice();S.source="snap";S.syncedAt=null}
+    $("banner").innerHTML=`<b>Couldn't reach the Google Sheet</b>, so you're seeing ${S.source=="cache"?"the last synced data ("+S.syncedAt.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+")":"the data saved on "+SNAPSHOT_AT}. To make it live: open the sheet → <b>Share</b> → General access → <b>Anyone with the link · Viewer</b>. The dashboard picks up changes on its own after that.`;
+    $("banner").classList.add("on");
+  }
+  S.props=Object.keys(S.data);
+  if(!S.data[S.prop])S.prop=S.props.includes("ALL PROPERTIES")?"ALL PROPERTIES":S.props[0];
+  updateChip();buildSelects();render();
+}
+function setChip(cls,t){const c=$("chip");c.className="chip "+cls;$("chipT").textContent=t}
+function updateChip(){
+  const tm=d=>d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+  if(S.source=="live")setChip("live","Live · synced "+tm(S.syncedAt));
+  else if(S.source=="cache")setChip("snap","Offline · last sync "+S.syncedAt.toLocaleDateString("en-IN",{day:"numeric",month:"short"}));
+  else setChip("snap","Snapshot · "+SNAPSHOT_AT);
+}
+
+/* ===================== DERIVED ===================== */
+function lastIdx(){const a=S.data["ALL PROPERTIES"]||S.data[S.props[0]];let L=0;
+  const all=S.props.map(p=>S.data[p]);
+  for(let i=0;i<S.months.length;i++)if(all.some(d=>d.gc[i]||d.ga[i]||d.ck[i]||d.ca[i]))L=i;return L}
+function monthLabel(i){const m=S.months[i];const mi=MONTHS_STD.indexOf(m);const y=FY_START_YEAR+(mi>=9?1:0);return m+" "+String(y).slice(2)}
+function range(){const L=S.last;if(S.per=="ytd")return [0,L];const i=+S.per;return [i,i]}
+function D(){return S.data[S.prop]}
+function agg(d,a,b){const sl=k=>d[k].slice(a,b+1);return{gc:sum(sl("gc")),ga:sum(sl("ga")),ck:sum(sl("ck")),ca:sum(sl("ca"))}}
+function U(p,i){return (USER[p]||{})[S.months[i]]||{}}
+
+/* ===================== UI BUILD ===================== */
+function buildSelects(){
+  S.last=lastIdx();
+  const ps=$("propSel");ps.innerHTML=S.props.map(p=>`<option value="${esc(p)}">${p=="ALL PROPERTIES"?"All properties":esc(short(p))}</option>`).join("");ps.value=S.prop;
+  const pe=$("perSel");let o=`<option value="ytd">Apr – ${S.months[S.last]} (year to date)</option>`;
+  for(let i=S.last;i>=0;i--)o+=`<option value="${i}">${monthLabel(i)}</option>`;
+  pe.innerHTML=o;if(S.per!="ytd"&&+S.per>S.last)S.per="ytd";pe.value=S.per;
+}
+$("propSel").onchange=e=>{S.prop=e.target.value;saveView();render()};
+$("perSel").onchange=e=>{S.per=e.target.value;saveView();render()};
+$("refresh").onclick=()=>load(true);
+
+/* ===================== RENDER ===================== */
+function render(){
+  const d=D(),[a,b]=range(),T=agg(d,a,b);
+  const isAll=S.prop=="ALL PROPERTIES";
+  const pername=S.per=="ytd"?`Apr – ${S.months[S.last]}`:monthLabel(+S.per);
+  $("title").textContent=isAll?"Coal & Gas · All properties":"Coal & Gas · "+short(S.prop);
+  $("subt").textContent=`FY ${FY_START_YEAR}–${String(FY_START_YEAR+1).slice(2)} · ${pername}${S.per=="ytd"&&isPartial(S.last)?" · "+S.months[S.last]+" is in progress":""}`;
+  countUp($("kCyl"),T.gc,v=>N(v)+"<small>cylinders</small>");
+  $("kGasAmt").textContent=RL(T.ga);
+  $("kPerCyl").textContent=T.gc?R(T.ga/T.gc):"–";
+  countUp($("kKg"),T.ck,v=>N(v)+"<small>kg</small>");
+  $("kCoalAmt").textContent=RL(T.ca);
+  $("kPerKg").textContent=T.ck?R(T.ca/T.ck):"–";
+  const tot=T.ga+T.ca;$("kTot").textContent=R(tot);
+  $("kTotS").innerHTML=tot?`Gas <b style="color:var(--gas)">${Math.round(T.ga/tot*100)}%</b> · Coal + wood <b style="color:var(--coal)">${Math.round(T.ca/tot*100)}%</b>`:"No spend in this period";
+  $("mix").innerHTML=tot?`<i style="width:${T.ga/tot*100}%;background:var(--gas);border-radius:6px 0 0 6px"></i><i style="flex:1;background:var(--coal);border-radius:0 6px 6px 0"></i>`:"";
+  // sale %
+  let sale=0,est=0,fuelWithSale=0;for(let i=a;i<=b;i++){const u=U(S.prop,i);if(u.sale){sale+=u.sale;fuelWithSale+=d.ga[i]+d.ca[i]}if(u.est)est+=u.est}
+  if(sale){$("kPct").textContent=(fuelWithSale/sale*100).toFixed(1)+"%";$("kPctS").textContent=`${R(fuelWithSale)} fuel on ${R(sale)} sale`}
+  else{$("kPct").textContent="–";$("kPctS").textContent="Add restaurant sale in the table below"}
+  sparkline($("spGas"),d.ga.map((v,i)=>d.gc[i]?v/d.gc[i]:null).slice(0,S.last+1),"#8FB6FF");
+  sparkline($("spCoal"),d.ca.map((v,i)=>d.ck[i]?v/d.ck[i]:null).slice(0,S.last+1),"#FFB27E");
+  drawHeap(T.ck);
+  insights();
+  chartSpend();chartCyl();propList();chartKg();table();
+}
+function isPartial(i){const now=new Date();const m=MONTHS_STD[(now.getMonth()+9)%12];return S.months[i]==m}
+function countUp(el,v,fmt){const from=+el.dataset.v||0;el.dataset.v=v;const t0=performance.now(),dur=700;
+  (function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.innerHTML=fmt(from+(v-from)*e);if(p<1)requestAnimationFrame(f)})(t0)}
+
+function sparkline(svg,vals,col){
+  const w=220,h=38;svg.setAttribute("viewBox",`0 0 ${w} ${h}`);
+  const pts=vals.map((v,i)=>v==null?null:[i,v]).filter(Boolean);
+  if(pts.length<2){svg.innerHTML="";return}
+  const mx=Math.max(...pts.map(p=>p[1])),mn=Math.min(...pts.map(p=>p[1]));
+  const X=i=>4+i*(w-8)/Math.max(1,vals.length-1),Y=v=>h-6-(mx==mn?.5:(v-mn)/(mx-mn))*(h-14);
+  const path=pts.map((p,k)=>(k?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join(" ");
+  const lp=pts[pts.length-1];
+  svg.innerHTML=`<path d="${path}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`+
+  `<circle cx="${X(lp[0])}" cy="${Y(lp[1])}" r="4" fill="${col}" stroke="rgba(0,0,0,.4)" stroke-width="2"/>`+
+  `<text x="${Math.min(X(lp[0])+8,w)}" y="${Y(lp[1])+4}" fill="#fff" font-size="11" font-weight="800">${R(lp[1])}</text>`+
+  pts.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="9" fill="transparent" data-tip="${monthLabel(p[0])}|${R(p[1])}"/>`).join("");
+  svg.querySelectorAll("[data-tip]").forEach(c=>{c.onmousemove=e=>{const [t,v]=c.dataset.tip.split("|");tip(e,`<div class="tt">${t}</div>${v}`)};c.onmouseleave=hideTip});
+}
+// coal heap art – lumps scale with quantity
+function drawHeap(kg){
+  const g=$("heapArt");if(!g)return;
+  const n=Math.max(8,Math.min(34,Math.round(8+Math.log10(1+kg)*6)));
+  let s="",seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  const rocks=[];for(let i=0;i<n;i++){const u=rnd()*2-1;const hmax=(1-u*u)*(40+n*1.6);rocks.push({x:88+u*66,y:196-rnd()*hmax,r:7+rnd()*8})}
+  rocks.sort((a,b)=>a.y-b.y);
+  for(const r of rocks){const k=6;let p="";for(let j=0;j<k;j++){const a=j/k*Math.PI*2+rnd()*.5,rr=r.r*(.75+rnd()*.4);p+=(j?"L":"M")+(r.x+Math.cos(a)*rr).toFixed(1)+" "+(r.y+Math.sin(a)*rr*.8).toFixed(1)}
+    s+=`<path d="${p}Z" fill="url(#rockG)" stroke="#000" stroke-opacity=".4"/>`;
+    if(rnd()<.7)s+=`<path class="emb" d="${p}Z" fill="url(#emberG)" opacity=".8" style="mix-blend-mode:screen"/>`}
+  g.innerHTML=s;
+  let sp="";for(let i=0;i<9;i++){sp+=`<circle class="spk" cx="${40+rnd()*100}" cy="${150+rnd()*30}" r="${1+rnd()*1.6}" fill="#FFC27A" style="animation-delay:-${(rnd()*2.6).toFixed(2)}s;animation-duration:${(2+rnd()*1.4).toFixed(2)}s"/>`}
+  $("sparkArt").innerHTML=sp;
+}
+
+/* insights */
+function insights(){
+  const d=D(),L=S.last,out=[];
+  const done=isPartial(L)&&L>0?L-1:L; // last complete month
+  let pk=0;for(let i=0;i<=L;i++)if(d.gc[i]>d.gc[pk])pk=i;
+  if(d.gc[pk])out.push({k:"🔥 Busiest gas month",t:`<b>${monthLabel(pk)}</b> used <b>${N(d.gc[pk])} cylinders</b>${pk==done||pk==L?"":""} — ${d.gc[pk]&&d.ga[pk]?R(d.ga[pk])+" of gas":""}.`});
+  if(done>0){const a=d.ga[done]+d.ca[done],b=d.ga[done-1]+d.ca[done-1];
+    if(b){const ch=(a-b)/b*100;out.push({k:ch>0?"📈 Month on month":"📉 Month on month",t:`${monthLabel(done)} fuel spend was <b>${R(a)}</b>, <b style="color:${ch>0?"var(--bad)":"var(--good)"}">${ch>0?"+":""}${ch.toFixed(0)}%</b> vs ${S.months[done-1]}.`})}}
+  if(S.prop=="ALL PROPERTIES"){
+    const [a,b]=range();let best=null;
+    for(const p of S.props){if(p=="ALL PROPERTIES")continue;const t=agg(S.data[p],a,b);const v=t.ga+t.ca;if(!best||v>best.v)best={p,v}}
+    const all=agg(d,a,b);if(best&&best.v)out.push({k:"🏨 Top spender",t:`<b>${esc(short(best.p))}</b> — ${R(best.v)}, <b>${Math.round(best.v/(all.ga+all.ca)*100)}%</b> of all fuel spend.`});
+  }else{
+    let ck=0;for(let i=0;i<=L;i++)if(d.ck[i]>d.ck[ck])ck=i;
+    if(d.ck[ck])out.push({k:"🪵 Most coal + wood",t:`<b>${monthLabel(ck)}</b>: <b>${N(d.ck[ck])} kg</b> for ${R(d.ca[ck])}.`});
+  }
+  // price check: ₹/cylinder outliers
+  const flags=[];const props=S.prop=="ALL PROPERTIES"?S.props.filter(p=>p!="ALL PROPERTIES"):[S.prop];
+  for(const p of props){const x=S.data[p];for(let i=0;i<=L;i++){if(x.gc[i]>0){const pc=x.ga[i]/x.gc[i];if(pc<600||pc>5000)flags.push(`${short(p)} ${S.months[i]} (${R(pc)}/cyl)`)}else if(x.ga[i]>0)flags.push(`${short(p)} ${S.months[i]} (₹ with 0 cyl)`)}}
+  if(flags.length)out.push({w:1,k:"⚠️ Check these entries",t:`Unusual gas price per cylinder: <b>${esc(flags.slice(0,3).join(", "))}</b>${flags.length>3?` +${flags.length-3} more`:""}.`});
+  else{const T=agg(d,0,L);out.push({k:"✅ Prices look normal",t:`Average <b>${T.gc?R(T.ga/T.gc):"–"}</b> per cylinder and <b>${T.ck?R(T.ca/T.ck):"–"}</b> per kg so far this year.`})}
+  $("ins").innerHTML=out.slice(0,4).map(o=>`<div class="in${o.w?" warn":""}"><div class="k">${o.k}</div>${o.t}</div>`).join("");
+}
+
+/* ===================== CHARTS ===================== */
+const tipEl=$("tip");
+function tip(e,h){tipEl.innerHTML=h;tipEl.classList.add("on");const r=tipEl.getBoundingClientRect();let x=e.clientX+14,y=e.clientY-r.height-12;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y<8)y=e.clientY+16;tipEl.style.left=x+"px";tipEl.style.top=y+"px"}
+function hideTip(){tipEl.classList.remove("on")}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p}
+function frame(el,h){const W=Math.max(320,el.clientWidth||560);return{W,H:h,l:52,r:10,t:16,b:28}}
+function axes(f,max,fmt){let s="";for(let k=0;k<=4;k++){const v=max*k/4,y=f.t+(f.H-f.t-f.b)*(1-k/4);s+=`<line class="gl" x1="${f.l}" x2="${f.W-f.r}" y1="${y}" y2="${y}"/><text class="ax" x="${f.l-8}" y="${y+4}" text-anchor="end">${fmt(v)}</text>`}return s}
+const selI=()=>S.per=="ytd"?-1:+S.per;
+function bindTips(el){el.querySelectorAll("[data-i]").forEach(h=>{
+  h.onmousemove=e=>tip(e,h._tip());h.onmouseleave=hideTip;
+  h.onclick=()=>{const i=+h.dataset.i;S.per=(S.per==String(i))?"ytd":String(i);$("perSel").value=S.per;saveView();render()}})}
+
+function chartSpend(){
+  const el=$("chSpend"),d=D(),n=S.last+1,f=frame(el,250);
+  const max=niceMax(Math.max(...d.ga.slice(0,n),...d.ca.slice(0,n)));
+  const pw=(f.W-f.l-f.r)/n,bw=Math.min(22,(pw-12)/2),H=f.H-f.t-f.b,y=v=>f.t+H*(1-v/max);
+  let s=axes(f,max,RL);const si=selI();
+  for(let i=0;i<n;i++){const cx=f.l+pw*(i+.5),dim=si>=0&&si!=i?' class="bar-dim"':"";
+    const g=d.ga[i],c=d.ca[i];
+    s+=`<g${dim}>${g?bar(cx-1-bw,y(g),bw,f.t+H-y(g),"var(--gas)"):""}${c?bar(cx+1,y(c),bw,f.t+H-y(c),"var(--coal)"):""}</g>`;
+    s+=`<text class="ax" x="${cx}" y="${f.H-8}" text-anchor="middle">${S.months[i]}</text>`;
+    s+=`<rect class="hit" data-i="${i}" x="${cx-pw/2}" y="${f.t}" width="${pw}" height="${H}"/>`}
+  // direct label on max total
+  let mi=0;for(let i=0;i<n;i++)if(d.ga[i]+d.ca[i]>d.ga[mi]+d.ca[mi])mi=i;
+  if(d.ga[mi]+d.ca[mi]){const cx=f.l+pw*(mi+.5);s+=`<text x="${cx}" y="${y(Math.max(d.ga[mi],d.ca[mi]))-7}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">${RL(d.ga[mi]+d.ca[mi])}</text>`}
+  el.innerHTML=`<svg viewBox="0 0 ${f.W} ${f.H}" height="${f.H}">${s}</svg>`;
+  el.querySelectorAll("[data-i]").forEach(h=>{const i=+h.dataset.i;h._tip=()=>`<div class="tt">${monthLabel(i)}</div><div class="tr"><span><i style="background:var(--gas)"></i>Gas</span><b>${R(d.ga[i])}</b></div><div class="tr"><span><i style="background:var(--coal)"></i>Coal + wood</span><b>${R(d.ca[i])}</b></div><div class="tr mut"><span>Total</span><b>${R(d.ga[i]+d.ca[i])}</b></div>`});
+  bindTips(el);
+}
+function bar(x,y,w,h,col){if(h<=0)return"";const r=Math.min(4,h,w/2);return `<path d="M${x} ${y+h}V${y+r}Q${x} ${y} ${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${y+h}Z" fill="${col}"/>`}
+
+function chartCyl(){
+  const el=$("chCyl"),d=D(),n=S.last+1,f=frame(el,250);f.l=40;
+  const max=niceMax(Math.max(...d.gc.slice(0,n))*1.1);const pw=(f.W-f.l-f.r)/n,bw=Math.min(34,pw*.5),H=f.H-f.t-f.b,y=v=>f.t+H*(1-v/max);
+  let s=`<defs><linearGradient id="cylB" x1="0" x2="1"><stop offset="0" stop-color="#1F55BD"/><stop offset=".4" stop-color="#2F6FE4"/><stop offset=".6" stop-color="#5A8FF0"/><stop offset="1" stop-color="#1F55BD"/></linearGradient></defs>`;
+  s+=axes(f,max,v=>N(v));const si=selI();
+  const nz=d.gc.slice(0,n).filter(v=>v>0),avg=nz.length?sum(nz)/nz.length:0;
+  let mx=0;for(let i=0;i<n;i++)if(d.gc[i]>d.gc[mx])mx=i;
+  for(let i=0;i<n;i++){const v=d.gc[i],cx=f.l+pw*(i+.5),x=cx-bw/2,top=y(v),h=f.t+H-top;
+    if(v>0){const dome=Math.min(bw*.42,h*.5);
+      s+=`<g${si>=0&&si!=i?' class="bar-dim"':""}><path d="M${x} ${f.t+H}V${top+dome}Q${x} ${top} ${cx} ${top}Q${x+bw} ${top} ${x+bw} ${top+dome}V${f.t+H}Z" fill="url(#cylB)"/>`+
+      (h>26?`<rect x="${x}" y="${top+dome+Math.min(10,h*.2)}" width="${bw}" height="${Math.min(5,h*.08)}" fill="#fff" opacity=".35"/>`:"")+
+      `<rect x="${cx-bw*.16}" y="${top-5}" width="${bw*.32}" height="5" rx="1.5" fill="#C9A43A"/></g>`}
+    if(i==mx||i==si)s+=`<text x="${cx}" y="${top-10}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">${N(v)}</text>`;
+    s+=`<text class="ax" x="${cx}" y="${f.H-8}" text-anchor="middle">${S.months[i]}</text><rect class="hit" data-i="${i}" x="${cx-pw/2}" y="${f.t}" width="${pw}" height="${H}"/>`}
+  if(avg){s+=`<line x1="${f.l}" x2="${f.W-f.r}" y1="${y(avg)}" y2="${y(avg)}" stroke="var(--ink2)" stroke-dasharray="4 4" stroke-width="1.2" opacity=".6"/><text x="${f.W-f.r}" y="${y(avg)-6}" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--ink2)">avg ${N(avg)}</text>`}
+  el.innerHTML=`<svg viewBox="0 0 ${f.W} ${f.H}" height="${f.H}">${s}</svg>`;
+  el.querySelectorAll("[data-i]").forEach(h=>{const i=+h.dataset.i;h._tip=()=>`<div class="tt">${monthLabel(i)}</div><div class="tr"><span>Cylinders</span><b>${N(d.gc[i])}</b></div><div class="tr"><span>Gas spend</span><b>${R(d.ga[i])}</b></div><div class="tr mut"><span>Per cylinder</span><b>${d.gc[i]?R(d.ga[i]/d.gc[i]):"–"}</b></div>`});
+  bindTips(el);
+}
+function chartKg(){
+  const el=$("chKg"),d=D(),n=S.last+1,f=frame(el,Math.max(230,($("plist").offsetHeight||300)-10));f.l=46;
+  const max=niceMax(Math.max(...d.ck.slice(0,n))*1.08);const pw=(f.W-f.l-f.r)/n,bw=Math.min(34,pw*.5),H=f.H-f.t-f.b,y=v=>f.t+H*(1-v/max);
+  let s=`<defs><linearGradient id="coalB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F08A4B"/><stop offset=".25" stop-color="#E0662A"/><stop offset="1" stop-color="#B84A17"/></linearGradient></defs>`;
+  s+=axes(f,max,v=>v>=1000?(+(v/1000).toFixed(1))+"k":N(v));const si=selI();
+  let mx=0;for(let i=0;i<n;i++)if(d.ck[i]>d.ck[mx])mx=i;
+  for(let i=0;i<n;i++){const v=d.ck[i],cx=f.l+pw*(i+.5);
+    s+=`<g${si>=0&&si!=i?' class="bar-dim"':""}>${bar(cx-bw/2,y(v),bw,f.t+H-y(v),"url(#coalB)")}</g>`;
+    if((i==mx||i==si)&&v)s+=`<text x="${cx}" y="${y(v)-7}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">${N(v)} kg</text>`;
+    s+=`<text class="ax" x="${cx}" y="${f.H-8}" text-anchor="middle">${S.months[i]}</text><rect class="hit" data-i="${i}" x="${cx-pw/2}" y="${f.t}" width="${pw}" height="${H}"/>`}
+  el.innerHTML=`<svg viewBox="0 0 ${f.W} ${f.H}" height="${f.H}">${s}</svg>`;
+  el.querySelectorAll("[data-i]").forEach(h=>{const i=+h.dataset.i;h._tip=()=>`<div class="tt">${monthLabel(i)}</div><div class="tr"><span>Coal + wood</span><b>${N(d.ck[i])} kg</b></div><div class="tr"><span>Spend</span><b>${R(d.ca[i])}</b></div><div class="tr mut"><span>Per kg</span><b>${d.ck[i]?R(d.ca[i]/d.ck[i]):"–"}</b></div>`});
+  bindTips(el);
+}
+function propList(){
+  const [a,b]=range();const rows=S.props.filter(p=>p!="ALL PROPERTIES").map(p=>{const t=agg(S.data[p],a,b);return{p,...t,v:t.ga+t.ca}}).sort((x,y)=>y.v-x.v);
+  const max=Math.max(1,...rows.map(r=>r.v));
+  $("plSub").textContent=`Fuel spend, ${S.per=="ytd"?"Apr – "+S.months[S.last]:monthLabel(+S.per)} · click a property to open it`;
+  $("plist").innerHTML=rows.map(r=>`<div class="prow${r.p==S.prop?" on":""}" data-p="${esc(r.p)}"><div class="pn" title="${esc(r.p)}">${esc(short(r.p))}</div><div class="pb" style="width:${Math.max(r.v/max*100,.5)}%">${r.ga?`<i style="flex:${r.ga};background:var(--gas)"></i>`:""}${r.ca?`<i style="flex:${r.ca};background:var(--coal)"></i>`:""}</div><div class="pv num">${r.v?RL(r.v):'<span class="mutd">—</span>'}</div></div>`).join("");
+  $("plist").querySelectorAll(".prow").forEach(el=>{const r=rows.find(x=>x.p==el.dataset.p);
+    el.onmousemove=e=>tip(e,`<div class="tt">${esc(short(r.p))}</div><div class="tr"><span><i style="background:var(--gas)"></i>Gas · ${N(r.gc)} cyl</span><b>${R(r.ga)}</b></div><div class="tr"><span><i style="background:var(--coal)"></i>Coal + wood · ${N(r.ck)} kg</span><b>${R(r.ca)}</b></div><div class="tr mut"><span>Total</span><b>${R(r.v)}</b></div>`);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();S.prop=(S.prop==r.p)?"ALL PROPERTIES":r.p;$("propSel").value=S.prop;saveView();render();window.scrollTo({top:0,behavior:"smooth"})}});
+}
+
+/* ===================== TABLE ===================== */
+function table(){
+  const d=D(),n=S.last+1,si=selI();
+  let h=`<thead><tr><th>Month</th><th class="gasH">Gas cylinders</th><th class="gasH">Gas amount</th><th class="gasH">₹ / cylinder</th><th class="coalH">Coal + wood kg</th><th class="coalH">Coal + wood amount</th><th class="coalH">₹ / kg</th><th>Total fuel</th><th class="userH">Restaurant sale</th><th class="userH">Estimated expense</th><th style="min-width:78px">Fuel % of sale</th><th style="min-width:96px">Variance vs est.</th></tr></thead><tbody>`;
+  const tot={gc:0,ga:0,ck:0,ca:0,sale:0,est:0,fs:0,fe:0};
+  for(let i=0;i<S.months.length;i++){
+    const u=U(S.prop,i),fuel=d.ga[i]+d.ca[i],future=i>S.last;
+    tot.gc+=d.gc[i];tot.ga+=d.ga[i];tot.ck+=d.ck[i];tot.ca+=d.ca[i];
+    if(u.sale){tot.sale+=u.sale;tot.fs+=fuel}if(u.est){tot.est+=u.est;tot.fe+=fuel}
+    const pc=d.gc[i]?d.ga[i]/d.gc[i]:null,odd=pc!=null&&(pc<600||pc>5000);
+    const z=v=>v?v:'<span class="mutd">0</span>';
+    h+=`<tr class="${i==si?"sel":""}"${future?' style="opacity:.55"':""}><td><b>${monthLabel(i)}</b>${isPartial(i)?' <span class="pill chk" style="background:#E6F0FF;color:#2F6FE4">in progress</span>':""}</td>
+    <td class="num">${z(N(d.gc[i])=="0"?0:N(d.gc[i]))}</td><td class="num">${d.ga[i]?R(d.ga[i]):'<span class="mutd">—</span>'}</td><td class="num">${pc!=null?R(pc)+(odd?'<span class="pill chk">check</span>':""):'<span class="mutd">—</span>'}</td>
+    <td class="num">${z(N(d.ck[i])=="0"?0:N(d.ck[i]))}</td><td class="num">${d.ca[i]?R(d.ca[i]):'<span class="mutd">—</span>'}</td><td class="num">${d.ck[i]?R(d.ca[i]/d.ck[i]):'<span class="mutd">—</span>'}</td>
+    <td class="num"><b>${fuel?R(fuel):'<span class="mutd">—</span>'}</b></td>
+    <td class="user"><input inputmode="numeric" data-i="${i}" data-k="sale" placeholder="₹ sale" value="${u.sale?N(u.sale):""}"></td>
+    <td class="user"><input inputmode="numeric" data-i="${i}" data-k="est" placeholder="₹ estimate" value="${u.est?N(u.est):""}"></td>
+    <td class="num">${u.sale?(fuel/u.sale*100).toFixed(1)+"%":'<span class="mutd">—</span>'}</td>
+    <td class="num">${u.est?varPill(fuel-u.est,u.est):'<span class="mutd">—</span>'}</td></tr>`}
+  const tf=tot.ga+tot.ca;
+  h+=`</tbody><tfoot><tr><td>Total</td><td class="num">${N(tot.gc)}</td><td class="num">${R(tot.ga)}</td><td class="num">${tot.gc?R(tot.ga/tot.gc):"–"}</td><td class="num">${N(tot.ck)}</td><td class="num">${R(tot.ca)}</td><td class="num">${tot.ck?R(tot.ca/tot.ck):"–"}</td><td class="num">${R(tf)}</td><td class="num">${tot.sale?R(tot.sale):"–"}</td><td class="num">${tot.est?R(tot.est):"–"}</td><td class="num">${tot.sale?(tot.fs/tot.sale*100).toFixed(1)+"%":"–"}</td><td class="num">${tot.est?((tot.fe-tot.est>0?"+":"")+R(tot.fe-tot.est)):"–"}</td></tr></tfoot>`;
+  $("tbl").innerHTML=h;
+  $("tbl").querySelectorAll("input").forEach(inp=>{
+    inp.onfocus=()=>{inp.value=inp.value.replace(/,/g,"")};
+    inp.onchange=()=>{const v=toNum(inp.value),i=+inp.dataset.i,m=S.months[i];
+      USER[S.prop]=USER[S.prop]||{};USER[S.prop][m]=USER[S.prop][m]||{};
+      if(v>0)USER[S.prop][m][inp.dataset.k]=v;else delete USER[S.prop][m][inp.dataset.k];
+      saveUser();render()};
+    inp.onkeydown=e=>{if(e.key=="Enter")inp.blur()}});
+}
+function varPill(v,est){const p=v/est*100;return `<span class="pill ${v>0?"over":"under"}" title="${p.toFixed(1)}% vs estimate">${v>0?"+":"−"}${R(Math.abs(v))}</span>`}
+$("csv").onclick=()=>{
+  const d=D();const L=[["Month","Gas cylinders","Gas amount","Coal+wood kg","Coal+wood amount","Total fuel","Restaurant sale","Estimated expense"]];
+  for(let i=0;i<S.months.length;i++){const u=U(S.prop,i);L.push([monthLabel(i),d.gc[i],d.ga[i].toFixed(2),d.ck[i],d.ca[i].toFixed(2),(d.ga[i]+d.ca[i]).toFixed(2),u.sale||"",u.est||""])}
+  const blob=new Blob([L.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`coal-gas-${short(S.prop).replace(/\W+/g,"-")}.csv`;a.click()};
+
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(S.data){chartSpend();chartCyl();chartKg()}},150)});
+setInterval(()=>{if(!document.hidden)load()},REFRESH_MS);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.syncedAt&&Date.now()-S.syncedAt>60000)load()});
+
+/* =====================================================================
+   INTRO — coal embers + LPG cylinder → blue flame ignites → ☘️ rises
+   from the fire → Personal Management System loader
+   ===================================================================== */
+(function(){
+  const intro=$("intro"),cv=$("fx"),ctx=cv.getContext("2d"),lw=$("logoWrap");
+  let W=0,H=0,DPR=1,raf=0,t0=0,running=false,ended=false;
+  const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  const T_EMB=200,T_IGN=1900,T_BLOOM=3300,T_LOGO=3500,T_LOAD=5600,T_END=8200;
+  let gY,cx,cyl,heap,burner,rocks=[],logs=[],smoke=[],sparks=[],burst=[],LOGO=130;
+
+  function layout(){
+    gY=Math.round(H*.70);cx=W/2;const u=Math.min(W/1200,H/760,1.25);
+    LOGO=Math.round(clamp(Math.min(W,H)*.17,96,150));lw.style.width=lw.style.height=LOGO+"px";
+    cyl={x:cx-Math.min(W*.30,360*u+40),w:78*u,h:170*u};
+    burner={x:cx,y:gY-4,rx:70*u,ry:16*u,u};
+    heap={x:cx+Math.min(W*.30,360*u+40),w:300*u,h:120*u};
+    rocks=[];for(let i=0;i<95;i++){const s=rand(-1,1);const hm=(1-s*s)*heap.h;const y=gY-rand(0,hm);const r=rand(10,21)*u;
+      const n=Math.floor(rand(6,9)),pts=[];for(let j=0;j<n;j++){const a=j/n*Math.PI*2+rand(-.25,.25),rr=r*rand(.7,1.15);pts.push([Math.cos(a)*rr,Math.sin(a)*rr*.78])}
+      const cr=[];for(let j=0;j<2;j++){cr.push([[rand(-r*.5,r*.5),rand(-r*.4,r*.4)],[rand(-r*.5,r*.5),rand(-r*.4,r*.4)]])}
+      rocks.push({x:heap.x+s*heap.w/2,y,r,pts,cr,heat:rand(.35,1)*(1-(gY-y)/heap.h*.45),ph:rand(0,6.28),sp:rand(1.5,3.5),delay:rand(0,1400)})}
+    rocks.sort((a,b)=>a.y-b.y);
+    logs=[{x:heap.x-heap.w*.42,y:gY-8*u,w:heap.w*.6,h:15*u,a:-.07},{x:heap.x-heap.w*.15,y:gY-4*u,w:heap.w*.62,h:14*u,a:.06}];
+  }
+  function size(){const w=intro.clientWidth,h=intro.clientHeight;if(!w||!h)return false;DPR=Math.min(2,devicePixelRatio||1);W=w;H=h;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);layout();return true}
+
+  function bg(t){
+    const fire=clamp((t-T_IGN)/1400,0,1),emb=clamp((t-T_EMB)/1800,0,1);
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#030506");g.addColorStop(.6,"#0a0c0d");g.addColorStop(1,"#060707");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    // horizon glows
+    ctx.globalCompositeOperation="lighter";
+    let r=ctx.createRadialGradient(heap.x,gY-heap.h*.3,10,heap.x,gY-heap.h*.3,heap.w*1.4);r.addColorStop(0,`rgba(255,110,30,${.35*emb})`);r.addColorStop(1,"rgba(255,90,20,0)");ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+    r=ctx.createRadialGradient(burner.x,burner.y-30,10,burner.x,burner.y-30,burner.rx*5);r.addColorStop(0,`rgba(60,130,255,${.4*fire})`);r.addColorStop(1,"rgba(40,90,255,0)");ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+    const bloom=clamp((t-T_BLOOM)/900,0,1)*(1-clamp((t-T_LOAD)/800,0,1));
+    if(bloom>0){r=ctx.createRadialGradient(cx,gY-H*.22,10,cx,gY-H*.22,Math.max(W,H)*.6);r.addColorStop(0,`rgba(255,200,140,${.35*bloom})`);r.addColorStop(.4,`rgba(120,150,255,${.12*bloom})`);r.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=r;ctx.fillRect(0,0,W,H)}
+    ctx.globalCompositeOperation="source-over";
+    // floor
+    const f=ctx.createLinearGradient(0,gY,0,H);f.addColorStop(0,"#121212");f.addColorStop(1,"#040404");ctx.fillStyle=f;ctx.fillRect(0,gY,W,H-gY);
+    ctx.globalCompositeOperation="lighter";
+    r=ctx.createRadialGradient(heap.x,gY+6,4,heap.x,gY+6,heap.w*.8);r.addColorStop(0,`rgba(255,110,40,${.25*emb})`);r.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=r;ctx.fillRect(0,gY,W,H-gY);
+    r=ctx.createRadialGradient(burner.x,gY+6,4,burner.x,gY+6,burner.rx*2.6);r.addColorStop(0,`rgba(80,140,255,${.3*fire})`);r.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=r;ctx.fillRect(0,gY,W,H-gY);
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,gY+.5);ctx.lineTo(W,gY+.5);ctx.stroke();
+  }
+  function drawCyl(t){
+    const {x,w,h}=cyl,top=gY-h,u=burner.u,ign=clamp((t-T_IGN)/600,0,1);
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.beginPath();ctx.ellipse(x,gY+2,w*.62,6*u,0,0,7);ctx.fill();
+    // hose
+    ctx.strokeStyle="#16181d";ctx.lineWidth=5*u;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(x+6*u,top-22*u);
+    ctx.bezierCurveTo(x+w*1.4,top-60*u,burner.x-burner.rx*2.2,gY-6*u,burner.x-burner.rx*.95,gY-6*u);ctx.stroke();
+    const g=ctx.createLinearGradient(x-w/2,0,x+w/2,0);g.addColorStop(0,"#4a0c09");g.addColorStop(.3,"#b62a20");g.addColorStop(.5,"#ff6b5a");g.addColorStop(.62,"#d23a2e");g.addColorStop(1,"#3a0907");
+    ctx.fillStyle=g;rr(x-w/2,top+18*u,w,h-18*u,w*.32);ctx.fill();
+    ctx.beginPath();ctx.ellipse(x,top+22*u,w*.36,16*u,0,Math.PI,0);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.88)";ctx.fillRect(x-w/2,top+h*.42,w,h*.12);
+    ctx.fillStyle="#b62a20";ctx.font=`800 ${Math.round(13*u)}px Inter,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("LPG",x,top+h*.48);
+    ctx.strokeStyle="#5d6168";ctx.lineWidth=5*u;rr(x-w*.3,top-14*u,w*.6,24*u,5*u);ctx.stroke();
+    ctx.fillStyle="#c9a43a";rr(x-7*u,top-24*u,14*u,16*u,2*u);ctx.fill();
+    ctx.fillStyle="#2a0605";rr(x-w*.46,gY-12*u,w*.92,12*u,3*u);ctx.fill();
+    // rim light from flame
+    if(ign>0){ctx.globalCompositeOperation="lighter";const l=ctx.createLinearGradient(x,0,x+w/2,0);l.addColorStop(0,"rgba(80,140,255,0)");l.addColorStop(1,`rgba(90,150,255,${.35*ign})`);ctx.fillStyle=l;rr(x,top+18*u,w/2,h-18*u,w*.32);ctx.fill();ctx.globalCompositeOperation="source-over"}
+  }
+  function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+  function drawHeap(t){
+    const s=t/1000;
+    for(const L of logs){ctx.save();ctx.translate(L.x+L.w/2,L.y);ctx.rotate(L.a);const g=ctx.createLinearGradient(0,-L.h/2,0,L.h/2);g.addColorStop(0,"#6b4126");g.addColorStop(1,"#2a170b");ctx.fillStyle=g;rr(-L.w/2,-L.h/2,L.w,L.h,L.h/2);ctx.fill();
+      ctx.fillStyle="#b07a4c";ctx.beginPath();ctx.ellipse(L.w/2-2,0,L.h*.32,L.h/2,0,0,7);ctx.fill();ctx.restore()}
+    for(const r of rocks){
+      const on=clamp((t-T_EMB-r.delay)/900,0,1);
+      ctx.beginPath();r.pts.forEach((p,j)=>j?ctx.lineTo(r.x+p[0],r.y+p[1]):ctx.moveTo(r.x+p[0],r.y+p[1]));ctx.closePath();
+      const g=ctx.createLinearGradient(r.x,r.y-r.r,r.x,r.y+r.r);g.addColorStop(0,"#3b3532");g.addColorStop(1,"#0d0b0a");ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;ctx.stroke();
+      if(on>0){const pulse=.65+.35*Math.sin(s*r.sp+r.ph);const a=on*r.heat*pulse;
+        ctx.save();ctx.clip();ctx.globalCompositeOperation="lighter";
+        const e=ctx.createRadialGradient(r.x,r.y+r.r*.4,1,r.x,r.y+r.r*.4,r.r*1.2);e.addColorStop(0,`rgba(255,190,90,${.9*a})`);e.addColorStop(.45,`rgba(240,100,30,${.6*a})`);e.addColorStop(1,"rgba(120,20,0,0)");ctx.fillStyle=e;ctx.fillRect(r.x-r.r*1.5,r.y-r.r*1.5,r.r*3,r.r*3);
+        ctx.strokeStyle=`rgba(255,170,70,${.9*a})`;ctx.lineWidth=1.3;for(const c of r.cr){ctx.beginPath();ctx.moveTo(r.x+c[0][0],r.y+c[0][1]);ctx.lineTo(r.x+c[1][0],r.y+c[1][1]);ctx.stroke()}
+        ctx.restore()}
+    }
+  }
+  function flame(px,py,h,w,sway,a,inner){
+    const g=ctx.createLinearGradient(0,py,0,py-h);
+    if(inner){g.addColorStop(0,`rgba(255,255,255,${a})`);g.addColorStop(.5,`rgba(170,230,255,${.7*a})`);g.addColorStop(1,"rgba(120,200,255,0)")}
+    else{g.addColorStop(0,`rgba(140,210,255,${a})`);g.addColorStop(.35,`rgba(50,120,255,${.85*a})`);g.addColorStop(.8,`rgba(40,60,255,${.35*a})`);g.addColorStop(1,"rgba(60,40,255,0)")}
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(px-w,py);ctx.quadraticCurveTo(px-w*.9,py-h*.55,px+sway,py-h);ctx.quadraticCurveTo(px+w*.9,py-h*.55,px+w,py);ctx.closePath();ctx.fill();
+  }
+  function drawBurner(t){
+    const {x,y,rx,ry,u}=burner,s=t/1000;
+    ctx.fillStyle="rgba(0,0,0,.6)";ctx.beginPath();ctx.ellipse(x,gY+2,rx*1.15,ry*.8,0,0,7);ctx.fill();
+    // stand
+    ctx.fillStyle="#1c1e22";rr(x-rx*1.1,y-2,rx*2.2,10*u,4*u);ctx.fill();
+    const g=ctx.createLinearGradient(x-rx,0,x+rx,0);g.addColorStop(0,"#202328");g.addColorStop(.5,"#6d727b");g.addColorStop(1,"#1a1c20");
+    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-6*u,rx,ry,0,0,7);ctx.fill();
+    ctx.fillStyle="#0c0d10";ctx.beginPath();ctx.ellipse(x,y-8*u,rx*.62,ry*.55,0,0,7);ctx.fill();
+    const ig=t-T_IGN;
+    if(ig>-250&&ig<120){const f=1-Math.abs(ig+60)/180;if(f>0){ctx.globalCompositeOperation="lighter";const sp=ctx.createRadialGradient(x+rx*.8,y-10*u,1,x+rx*.8,y-10*u,40*u);sp.addColorStop(0,`rgba(255,255,255,${f})`);sp.addColorStop(1,"rgba(120,180,255,0)");ctx.fillStyle=sp;ctx.fillRect(x-rx*2,y-80*u,rx*4,120*u);ctx.globalCompositeOperation="source-over"}}
+    if(ig<=0)return;
+    const grow=ease(clamp(ig/700,0,1)),boost=1+1.4*ease(clamp((t-T_BLOOM)/700,0,1))*(1-clamp((t-T_LOAD+400)/900,0,1));
+    ctx.globalCompositeOperation="lighter";
+    const N=26;
+    for(const pass of [0,1]){for(let i=0;i<N;i++){const a=i/N*Math.PI*2;const sn=Math.sin(a);if((pass==0)!=(sn<0))continue;
+      const px=x+Math.cos(a)*rx*.62,py=y-8*u+sn*ry*.55;
+      const nz=Math.sin(s*9+i*1.7)*.18+Math.sin(s*15.3+i*.6)*.1;
+      const h=(26+18*(.5+.5*Math.cos(a)*0))*u*(1+nz)*grow*boost;
+      flame(px,py,h,5.2*u,Math.sin(s*7+i)*3*u,.9,false);flame(px,py,h*.42,2.2*u,0,.8,true)}}
+    // central rising column during bloom
+    if(boost>1.02){const k=boost-1;for(let j=0;j<5;j++){const nz=Math.sin(s*8+j*2.1)*.15;flame(x+(j-2)*rx*.18,y-10*u,(70+40*Math.sin(j*1.3))*u*k*(1+nz),rx*.22,Math.sin(s*6+j)*8*u,.55,false)}
+      flame(x,y-10*u,90*u*k,rx*.16,Math.sin(s*5)*5*u,.6,true)}
+    ctx.globalCompositeOperation="source-over";
+  }
+  function particles(t,dt){
+    const emb=clamp((t-T_EMB)/1500,0,1),fade=1-clamp((t-T_LOAD)/900,0,1);
+    if(Math.random()<.5*emb*fade)smoke.push({x:heap.x+rand(-heap.w*.25,heap.w*.25),y:gY-heap.h*rand(.4,.9),vx:rand(-6,6),vy:rand(-26,-14),r:rand(14,26),age:0,life:rand(3,5)});
+    if(Math.random()<1.4*emb*fade)sparks.push({x:heap.x+rand(-heap.w*.35,heap.w*.35),y:gY-heap.h*rand(.2,.8),vx:rand(-15,15),vy:rand(-90,-40),age:0,life:rand(1,2.4),r:rand(.8,2.2),c:Math.random()<.7?"255,170,70":"255,230,160",w:rand(0,6)});
+    if(t>T_IGN&&Math.random()<.5*fade)sparks.push({x:burner.x+rand(-burner.rx*.5,burner.rx*.5),y:burner.y-30,vx:rand(-10,10),vy:rand(-70,-40),age:0,life:rand(.6,1.4),r:rand(.6,1.6),c:"150,200,255",w:rand(0,6)});
+    ctx.globalCompositeOperation="source-over";
+    smoke=smoke.filter(p=>(p.age+=dt)<p.life);
+    for(const p of smoke){p.x+=p.vx*dt+Math.sin(t/700+p.y*.02)*.3;p.y+=p.vy*dt;p.r+=10*dt;const a=.10*Math.sin(Math.PI*p.age/p.life);
+      const g=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,p.r);g.addColorStop(0,`rgba(120,110,105,${a})`);g.addColorStop(1,"rgba(80,80,80,0)");ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}
+    ctx.globalCompositeOperation="lighter";
+    sparks=sparks.filter(p=>(p.age+=dt)<p.life);
+    for(const p of sparks){p.x+=p.vx*dt+Math.sin(t/180+p.w)*.5;p.y+=p.vy*dt;p.vy*=.995;const a=1-p.age/p.life;ctx.fillStyle=`rgba(${p.c},${a})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}
+    burst=burst.filter(p=>(p.age+=dt)<p.life);
+    for(const p of burst){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.97;p.vy=p.vy*.97+12*dt;const a=1-p.age/p.life;ctx.fillStyle=`rgba(${p.c},${a})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}
+    ctx.globalCompositeOperation="source-over";
+  }
+  let burstDone=false;
+  function doBurst(x,y){for(let i=0;i<120;i++){const a=rand(0,6.28),v=rand(60,320);burst.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-40,age:0,life:rand(.7,1.6),r:rand(1,2.6),c:i%3==0?"120,180,255":i%3==1?"255,170,70":"140,255,190"})}}
+  function placeLogo(t){
+    const start={x:burner.x,y:burner.y-30,s:.05},air={x:cx,y:H*.36,s:1},load={x:cx,y:Math.round(H*.40),s:.85};
+    let P,o=1;
+    if(t<T_LOGO){o=0;P=start}
+    else if(t<T_LOGO+1300){const p=ease((t-T_LOGO)/1300);P={x:start.x,y:start.y+(air.y-start.y)*p,s:start.s+(air.s-start.s)*p};o=clamp((t-T_LOGO)/300,0,1)}
+    else if(t<T_LOAD){P={...air,y:air.y+Math.sin((t-T_LOGO-1300)/300)*4}}
+    else{const p=ease(clamp((t-T_LOAD)/900,0,1));P={x:air.x,y:air.y+(load.y-air.y)*p,s:air.s+(load.s-air.s)*p}}
+    lw.style.opacity=o;lw.style.transform=`translate(${P.x-LOGO/2}px,${P.y-LOGO/2}px) scale(${P.s})`;
+    $("ldtext").style.top=(load.y+LOGO*load.s/2+20)+"px";
+    if(!burstDone&&t>T_LOGO+1250){burstDone=true;doBurst(air.x,air.y)}
+  }
+  let last=0;
+  function frameFn(now){
+    if(!running)return;
+    if(!W&&!size()){raf=requestAnimationFrame(frameFn);return}
+    if(!t0)t0=now;const t=now-t0,dt=Math.min(.05,(now-(last||now))/1000);last=now;
+    try{
+      bg(t);drawCyl(t);drawHeap(t);drawBurner(t);particles(t,dt);placeLogo(t);
+      intro.classList.toggle("cap",t>600&&t<T_LOAD);
+      if(t>T_LOAD)intro.classList.add("loader");
+      if(t>T_LOAD+700)intro.classList.add("loader2");
+    }catch(e){console.error(e);finish();return}
+    if(t>=T_END){finish();return}
+    raf=requestAnimationFrame(frameFn);
+  }
+  function finish(){if(ended)return;ended=true;running=false;cancelAnimationFrame(raf);intro.classList.add("out");setTimeout(()=>{intro.style.display="none"},950)}
+  function play(){
+    intro.style.display="";intro.className="";ended=false;running=true;t0=0;last=0;W=0;smoke=[];sparks=[];burst=[];burstDone=false;
+    lw.style.opacity=0;
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches){setTimeout(finish,300);return}
+    raf=requestAnimationFrame(frameFn);
+    setTimeout(()=>{if(!ended)finish()},T_END+4000); // safety net
+  }
+  addEventListener("resize",()=>{if(running)size()});
+  $("skip").onclick=finish;
+  $("replay").onclick=()=>{window.scrollTo(0,0);play()};
+  play();
+})();
+
+load();
+</script>
+</body>
+</html>
